@@ -5,7 +5,7 @@
 namespace hw3d {
 
     class Vector3d final {
-        private:
+        public:
             std::vector<double> cs_;
 
         public:
@@ -58,8 +58,8 @@ namespace hw3d {
 
             std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
             std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
-            std::vector<double>::const_iterator begin() const noexcept { return cs_.begin(); }
-            std::vector<double>::const_iterator end() const noexcept { return cs_.end(); }
+            std::vector<double>::iterator begin() noexcept { return cs_.begin(); }
+            std::vector<double>::iterator end() noexcept { return cs_.end(); }
     };
 
     Vector3d operator*(double lhs, Vector3d& rhs);
@@ -153,5 +153,7 @@ namespace hw3d {
     bool plane_point_location(const Triangle& tr, const Vector3d& p);
 
     bool intersection_test_3d(const Triangle& a, const Triangle& b);
+
+    std::pair<double, double> compute_interval(const Triangle& t, const Vector3d& v);
 
 }

@@ -19,8 +19,46 @@ namespace hw3d {
     }
 
     bool intersection_test_2d(const Triangle& a, const Triangle& b) {
-        std::cout << "aboba";
+        std::for_each(a.cbegin(), a.cend(),
+            [&](auto it) {
+                Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
+                auto pair_a = compute_interval(a, d);
+                auto pair_b = compute_interval(b, d);
+                if(pair_a.second < pair_b.first || pair_a.second < pair_b.first) {
+                    return false;
+                }
+            }
+        );
+
+        std::for_each(b.cbegin(), b.cend(),
+            [&](auto it) {
+                Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
+                auto pair_a = compute_interval(a, d);
+                auto pair_b = compute_interval(b, d);
+                if(pair_a.second < pair_b.first || pair_a.second < pair_b.first) {
+                    return false;
+                }
+            }
+        );
+
         return true;
+    }
+
+    std::pair<double, double> compute_interval(const Triangle& t, const Vector3d& v) {
+        auto it = t.cbegin();
+        double min = v.dot_product(*it), max = min;
+        it++;
+        std::for_each(it, t.cend(),
+            [&](auto et){
+                double value = v.dot_product(et);
+                if(value < min) {
+                    min = value;
+                } else if(value > max) {
+                    max = value;
+                }
+            }
+        );
+        return std::pair<double, double>(min, max);
     }
 
     Vector3d operator*(double lhs, Vector3d& rhs) {
@@ -72,7 +110,7 @@ namespace hw3d {
         Line intersection_line1(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
         Line intersection_line2(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
 
-        if(relative_locations_a[0] > 0) {   // к этому моменту мы точно знаем, что ровно одна точка А лежит по другую сторону Б по отн к остальным
+        if(relative_locations_a[0] > 0) {
             if(relative_locations_a[1] > 0) { // [ + + - ]
                 Vector3d b_anchor = *(std::next(b.cbegin(), 2));
                 Vector3d p1 = line_plane_intersection(Line(b_anchor, *(b.cbegin())), a);
