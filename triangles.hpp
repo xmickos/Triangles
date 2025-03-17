@@ -1,5 +1,7 @@
 #include<vector>
 
+#pragma once
+
 namespace hw3d {
 
     class Vector3d final {
@@ -26,7 +28,7 @@ namespace hw3d {
                 return *this;
             }
 
-            Vector3d operator+(const Vector3d& rhs) {
+            Vector3d operator+(const Vector3d& rhs) const {
                 Vector3d tmp(*this);
                 std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(), [&](auto it1, auto it2){ return it1 += it2; });
                 return tmp;
@@ -56,7 +58,11 @@ namespace hw3d {
 
             std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
             std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
+            std::vector<double>::const_iterator begin() const noexcept { return cs_.begin(); }
+            std::vector<double>::const_iterator end() const noexcept { return cs_.end(); }
     };
+
+    Vector3d operator*(double lhs, Vector3d& rhs);
 
     class Line final {
         private:
@@ -74,16 +80,19 @@ namespace hw3d {
             }
     };
 
+    struct Plane final {
+        Vector3d n, p;
+
+        Plane(const Vector3d& n_, const Vector3d p_) : n(n_), p(p_) {}
+
+        // Line get_plane_intersection(const Plane& rhs) const {
+        // }
+    };
+
     class Triangle final {
         private:
             std::vector<Vector3d> vs_;
             double float_tolerance = 1e-9;
-
-            struct plane_equation {
-                Vector3d n, p;
-
-                plane_equation(const Vector3d& n_, const Vector3d p_) : n(n_), p(p_) {}
-            };
 
         public:
             Triangle(const Vector3d& a, const Vector3d& b, const Vector3d& c) {
@@ -102,18 +111,18 @@ namespace hw3d {
                 return std::fabs(tmp1.cross_product(tmp2).norm()) < float_tolerance;
             }
 
-            plane_equation get_plane_equation() const {
+            Plane get_plane_equation() const {
                 Vector3d p = vs_[0] - vs_[1];
                 Vector3d q = vs_[1] - vs_[2];
                 Vector3d u = vs_[0] - vs_[2];
                 Vector3d n = p.cross_product(q);
 
-                return plane_equation(p, n);
+                return Plane(p, n);
             }
 
             bool lies_on_parallel_planes_with(const Triangle& rhs) const {
-                plane_equation pq1 = get_plane_equation();
-                plane_equation pq2 = rhs.get_plane_equation();
+                Plane pq1 = get_plane_equation();
+                Plane pq2 = rhs.get_plane_equation();
                 Vector3d n1 = pq1.n;
                 Vector3d n2 = pq2.n;
 
@@ -121,8 +130,8 @@ namespace hw3d {
             }
 
             bool lies_on_the_same_plane_with(const Triangle& rhs) const {
-                plane_equation pq1 = get_plane_equation();
-                plane_equation pq2 = rhs.get_plane_equation();
+                Plane pq1 = get_plane_equation();
+                Plane pq2 = rhs.get_plane_equation();
                 Vector3d n1 = pq1.n;
                 Vector3d n2 = pq2.n;
                 Vector3d p1 = pq1.p;
@@ -134,4 +143,15 @@ namespace hw3d {
                 return std::fabs(d1 - d2) < float_tolerance;
             }
     };
+
+    bool check_interval_overlap(const Line& a, const Line& b);
+
+    Vector3d line_plane_intersection(const Line& l, const Triangle& a);
+
+    bool intersection_test_2d(const Triangle& a, const Triangle& b);
+
+    bool plane_point_location(const Triangle& tr, const Vector3d& p);
+
+    bool intersection_test_3d(const Triangle& a, const Triangle& b);
+
 }

@@ -1,16 +1,53 @@
+#include<iostream>
 #include"triangles.hpp"
 
-namespace hw3d{
+namespace hw3d {
 
-    bool intersection_test_2d(const Triangle& a, const Triangle& b);
+    Vector3d line_plane_intersection(const Line& l, const Triangle& a) {
+        double float_tolerance = 1e-9;
+        Plane pq = a.get_plane_equation();
+        Vector3d na = pq.n;
+        Vector3d pa = pq.p;
+        Vector3d ld = l.d();
+        Vector3d lp = l.p();
+        if(std::fabs(na.dot_product(ld) < float_tolerance)) {
+            return Vector3d(NAN, NAN, NAN);
+        } else {
+            double t = - (na.dot_product(lp) + pq.n.dot_product(pq.p)) / na.dot_product(ld);
+            return Vector3d(lp + t * ld);
+        }
+    }
+
+    bool intersection_test_2d(const Triangle& a, const Triangle& b) {
+        std::cout << "aboba";
+        return true;
+    }
+
+    Vector3d operator*(double lhs, Vector3d& rhs) {
+        Vector3d tmp(rhs);
+        std::for_each(tmp.begin(), tmp.end(), [&](auto it){ return lhs * it; });
+        return tmp;
+    }
+
+    bool plane_point_location(const Triangle& tr, const Vector3d& p) {
+        Plane pq = tr.get_plane_equation();
+        Vector3d n_ = pq.n;
+        Vector3d p_ = pq.p;
+
+        return n_.dot_product(p_) > 0;
+    }
 
     bool intersection_test_3d(const Triangle& a, const Triangle& b) {
         if(a.is_degenerate() || b.is_degenerate()) { return false; }
 
         std::vector<bool> relative_locations_a(3); // contains booleans describing how
         std::vector<bool> relative_locations_b(3); // points of 'b' are positioned relative to 'a' and vice versa
-        std::transform(b.cbegin(), b.cend(), relative_locations_a.begin(), [&](auto it){ return plane_point_location(a, it); });
-        std::transform(a.cbegin(), a.cend(), relative_locations_b.begin(), [&](auto it){ return plane_point_location(b, it); });
+        std::transform(b.cbegin(), b.cend(), relative_locations_a.begin(),
+            [&](auto it){ return plane_point_location(a, it); }
+        );
+        std::transform(a.cbegin(), a.cend(), relative_locations_b.begin(),
+            [&](auto it){ return plane_point_location(b, it); }
+        );
 
         if(
             std::all_of(relative_locations_a.begin(), relative_locations_a.end(), [](auto it){ return it > 0; }) ||
@@ -26,24 +63,62 @@ namespace hw3d{
         }
 
         if(
-            std::all_of(relative_locations_b.begin(), relative_locations_b.end(), [](auto it){ return it > 0; }) ||
-            std::all_of(relative_locations_b.begin(), relative_locations_b.end(), [](auto it){ return it < 0; })
+            std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
+                [](auto it){ return it > 0; }) ||
+            std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
+                [](auto it){ return it < 0; })
         ) { return false; }
 
+        Line intersection_line1(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
+        Line intersection_line2(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
 
+        if(relative_locations_a[0] > 0) {   // к этому моменту мы точно знаем, что ровно одна точка А лежит по другую сторону Б по отн к остальным
+            if(relative_locations_a[1] > 0) { // [ + + - ]
+                Vector3d b_anchor = *(std::next(b.cbegin(), 2));
+                Vector3d p1 = line_plane_intersection(Line(b_anchor, *(b.cbegin())), a);
+                Vector3d p2 = line_plane_intersection(Line(b_anchor, *(++b.cbegin())), a);
+                Line intersection_line1(p1, p2);
+            } else { // == ?
+                if(relative_locations_a[2] > 0) { // [ + - + ]
+                    Vector3d b_anchor = *(std::next(b.cbegin(), 1));
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, *(b.cbegin())), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, *(--b.cend())), a);
+                    Line intersection_line1(p1, p2);
+                } else { // [ + - - ]
+                    Vector3d b_anchor = *(b.cbegin());
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, *(b.cbegin())), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, *(std::next(b.cbegin(), 2))), a);
+                    Line intersection_line1(p1, p2);
+                }
+            }
+        }
+
+        if(relative_locations_b[0] > 0) {
+            if(relative_locations_b[1] > 0) { // [ + + - ]
+                Vector3d a_anchor = *(std::next(a.cbegin(), 2));
+                Vector3d p1 = line_plane_intersection(Line(a_anchor, *(a.cbegin())), b);
+                Vector3d p2 = line_plane_intersection(Line(a_anchor, *(++a.cbegin())), b);
+                Line intersection_line2(p1, p2);
+            } else {
+                if(relative_locations_b[2] > 0) { // [ + - + ]
+                    Vector3d a_anchor = *(std::next(a.cbegin(), 1));
+                    Vector3d p1 = line_plane_intersection(Line(a_anchor, *(a.cbegin())), b);
+                    Vector3d p2 = line_plane_intersection(Line(a_anchor, *(--a.cend())), b);
+                    Line intersection_line2(p1, p2);
+                } else { // [ + - - ]
+                    Vector3d a_anchor = *(a.cbegin());
+                    Vector3d p1 = line_plane_intersection(Line(a_anchor, *(a.cbegin())), b);
+                    Vector3d p2 = line_plane_intersection(Line(a_anchor, *(std::next(a.cbegin(), 2))), b);
+                    Line intersection_line2(p1, p2);
+                }
+            }
+        }
+
+        return check_interval_overlap(intersection_line1, intersection_line2);
 
     }
 
-    bool plane_point_location(const Triangle& tr, const Vector3d& p) {
-        auto tr_it = tr.cbegin();
-        Vector3d p1 = *(tr_it++);
-        Vector3d p2 = *(tr_it++);
-        Vector3d p3 = *(tr_it++);
-
-        Vector3d u = p1 - p2;
-        Vector3d v = p1 - p3;
-        Vector3d n = u.cross_product(v);
-
-        return n.dot_product(p) > 0;
+    bool check_interval_overlap(const Line& a, const Line& b) {
+        return a.contains(b.p()) || a.contains(b.p() + b.d());
     }
 }
