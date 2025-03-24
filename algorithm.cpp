@@ -24,9 +24,7 @@ namespace hw3d {
                 Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
                 auto pair_a = compute_interval(a, d);
                 auto pair_b = compute_interval(b, d);
-                if(pair_a.second < pair_b.first || pair_a.second < pair_b.first) {
-                    return false;
-                }
+                return pair_a.second < pair_b.first || pair_a.second < pair_b.first;
             }
         );
 
@@ -35,9 +33,7 @@ namespace hw3d {
                 Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
                 auto pair_a = compute_interval(a, d);
                 auto pair_b = compute_interval(b, d);
-                if(pair_a.second < pair_b.first || pair_a.second < pair_b.first) {
-                    return false;
-                }
+                return pair_a.second >= pair_b.first && pair_a.second >= pair_b.first;
             }
         );
 
@@ -153,7 +149,6 @@ namespace hw3d {
         }
 
         return check_interval_overlap(intersection_line1, intersection_line2);
-
     }
 
     bool check_interval_overlap(const Line& a, const Line& b) {

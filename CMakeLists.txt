@@ -20,7 +20,7 @@ add_executable(triangles
     ${SRCS} triangles.cpp
 )
 add_executable(trianglestest
-    ${SRCS}
+    ${SRCS} trianglestest.cpp
 )
 
 target_link_libraries(triangles
@@ -43,6 +43,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             -O0
     )
     target_compile_options(triangleslib
+        PUBLIC
+            -g
+            -O0
+    )
+    target_compile_options(trianglestest
         PUBLIC
             -g
             -O0

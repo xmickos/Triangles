@@ -56,11 +56,24 @@ namespace hw3d {
                 return std::sqrt(cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2]);
             }
 
+            Vector3d normalize() const {
+                double norm_ = norm();
+                return Vector3d(cs_[0] / norm_, cs_[1] / norm_, cs_[2] / norm_);
+            }
+
+            std::ostream& operator<<(std::ostream& os) const {
+                os << "(" << cs_[0] << ", " << cs_[1] << ", " << cs_[2] << ")";
+                return os;
+            }
+
             std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
             std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
             std::vector<double>::iterator begin() noexcept { return cs_.begin(); }
             std::vector<double>::iterator end() noexcept { return cs_.end(); }
+            const double operator[](int i) const { return cs_[i]; }
     };
+
+    using edge = std::pair<Vector3d, Vector3d>;
 
     Vector3d operator*(double lhs, Vector3d& rhs);
 
@@ -82,65 +95,63 @@ namespace hw3d {
 
     struct Plane final {
         Vector3d n, p;
+        double a, b, c, d;
 
-        Plane(const Vector3d& n_, const Vector3d p_) : n(n_), p(p_) {}
-
-        // Line get_plane_intersection(const Plane& rhs) const {
-        // }
+        Plane(const Vector3d& n_, const Vector3d p_) : n(n_), p(p_) {
+            a = n[0];
+            b = n[1];
+            c = n[2];
+            d = -n.dot_product(p);
+        }
     };
 
     class Triangle final {
         private:
-            std::vector<Vector3d> vs_;
+            std::vector<Vector3d> vertexes;
+            std::vector<edge> edges;
             double float_tolerance = 1e-9;
 
         public:
             Triangle(const Vector3d& a, const Vector3d& b, const Vector3d& c) {
-                vs_.push_back(a);
-                vs_.push_back(b);
-                vs_.push_back(c);
+                vertexes.push_back(a);
+                vertexes.push_back(b);
+                vertexes.push_back(c);
+
+                edges.push_back(edge(a, b));
+                edges.push_back(edge(b, c));
+                edges.push_back(edge(c, a));
+
             }
 
-            std::vector<Vector3d>::const_iterator cbegin() const noexcept { return vs_.cbegin(); }
-            std::vector<Vector3d>::const_iterator cend() const noexcept { return vs_.cend(); }
+            std::vector<Vector3d>::const_iterator cbegin() const noexcept { return vertexes.cbegin(); }
+            std::vector<Vector3d>::const_iterator cend() const noexcept { return vertexes.cend(); }
+            std::vector<edge>::const_iterator ecbegin() const noexcept { return edges.cbegin(); }
+            std::vector<edge>::const_iterator ecend() const noexcept { return edges.cend(); }
 
             bool is_degenerate() const {
-                Vector3d tmp1(vs_[0] - vs_[1]);
-                Vector3d tmp2(vs_[1] - vs_[2]);
+                Vector3d tmp1(vertexes[0] - vertexes[1]);
+                Vector3d tmp2(vertexes[1] - vertexes[2]);
 
                 return std::fabs(tmp1.cross_product(tmp2).norm()) < float_tolerance;
             }
 
             Plane get_plane_equation() const {
-                Vector3d p = vs_[0] - vs_[1];
-                Vector3d q = vs_[1] - vs_[2];
-                Vector3d u = vs_[0] - vs_[2];
-                Vector3d n = p.cross_product(q);
-
-                return Plane(p, n);
+                Vector3d n = (edges[0].second - edges[0].first).cross_product(edges[1].second - edges[0].first).normalize();
+                return Plane(n, vertexes[1]);
             }
 
             bool lies_on_parallel_planes_with(const Triangle& rhs) const {
                 Plane pq1 = get_plane_equation();
                 Plane pq2 = rhs.get_plane_equation();
-                Vector3d n1 = pq1.n;
-                Vector3d n2 = pq2.n;
-
-                return n1.cross_product(n2).norm() > float_tolerance;
+                return pq1.n.cross_product(pq2.n).norm() < float_tolerance;
             }
 
             bool lies_on_the_same_plane_with(const Triangle& rhs) const {
                 Plane pq1 = get_plane_equation();
                 Plane pq2 = rhs.get_plane_equation();
-                Vector3d n1 = pq1.n;
-                Vector3d n2 = pq2.n;
-                Vector3d p1 = pq1.p;
-                Vector3d p2 = pq2.p;
-
-                double d1 = n1.dot_product(p1);
-                double d2 = n2.dot_product(p2);
-
-                return std::fabs(d1 - d2) < float_tolerance;
+                return std::all_of(rhs.ecbegin(), rhs.ecend(),
+                    [&](auto edge){ return pq1.n.dot_product(edge.second - edge.first) < float_tolerance; }
+                ) && std::fabs(pq1.d - pq2.d) < float_tolerance;
             }
     };
 
