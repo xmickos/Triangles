@@ -8,6 +8,9 @@ namespace hw3d {
         public:
             std::vector<double> cs_;
 
+        private:
+            double float_tolerance = 1e-9;
+
         public:
             Vector3d(double x_, double y_, double z_) {
                 cs_.push_back(x_);
@@ -57,7 +60,7 @@ namespace hw3d {
             }
 
             Vector3d normalize() const {
-                double norm_ = norm();
+                double norm_ = norm() > 0 ? norm() : float_tolerance;
                 return Vector3d(cs_[0] / norm_, cs_[1] / norm_, cs_[2] / norm_);
             }
 
@@ -132,11 +135,11 @@ namespace hw3d {
                 Vector3d tmp1(vertexes[0] - vertexes[1]);
                 Vector3d tmp2(vertexes[1] - vertexes[2]);
 
-                return std::fabs(tmp1.cross_product(tmp2).norm()) < float_tolerance;
+                return tmp1.cross_product(tmp2).norm() < float_tolerance;
             }
 
             Plane get_plane_equation() const {
-                Vector3d n = (edges[0].second - edges[0].first).cross_product(edges[1].second - edges[0].first).normalize();
+                Vector3d n = (edges[0].second - edges[0].first).cross_product(edges[1].second - edges[1].first).normalize();
                 return Plane(n, vertexes[1]);
             }
 

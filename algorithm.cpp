@@ -19,25 +19,37 @@ namespace hw3d {
     }
 
     bool intersection_test_2d(const Triangle& a, const Triangle& b) {
-        std::for_each(a.cbegin(), a.cend(),
-            [&](auto it) {
-                Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
+        if(a.is_degenerate() || b.is_degenerate()) return false;
+        Plane a_plane = a.get_plane_equation();
+        Vector3d n = a_plane.n;
+
+        std::cout << "---- " << std::endl;
+
+        bool result = std::all_of(a.ecbegin(), a.ecend(),
+            [&](auto eit) {
+                Vector3d tmp(eit.second - eit.first);
+                Vector3d d = n.cross_product(tmp);
                 auto pair_a = compute_interval(a, d);
                 auto pair_b = compute_interval(b, d);
-                return pair_a.second < pair_b.first || pair_a.second < pair_b.first;
-            }
-        );
+                std::cout << "a: " << pair_a.first << " " << pair_a.second << std::endl;
+                std::cout << "b: " << pair_b.first << " " << pair_b.second << std::endl << std::endl;
+                return pair_a.second >= pair_b.first && pair_a.first <= pair_b.second;
+            });
 
-        std::for_each(b.cbegin(), b.cend(),
-            [&](auto it) {
-                Vector3d d(it.cs_[1], -it.cs_[0], it.cs_[2]);
-                auto pair_a = compute_interval(a, d);
-                auto pair_b = compute_interval(b, d);
-                return pair_a.second >= pair_b.first && pair_a.second >= pair_b.first;
-            }
-        );
+            std::cout << result << std::endl;
 
-        return true;
+        return result;
+
+//         std::all_of(b.ecbegin(), b.ecend(),
+//             [&](auto eit) {
+//                 Vector3d tmp(eit.second - eit.first);
+//                 Vector3d d = n.cross_product(tmp).normalize();
+//                 auto pair_a = compute_interval(a, d);
+//                 auto pair_b = compute_interval(b, d);
+//                 return pair_a.second < pair_b.first || pair_a.first > pair_b.second;
+//             });
+//
+//         return true;
     }
 
     std::pair<double, double> compute_interval(const Triangle& t, const Vector3d& v) {
@@ -86,12 +98,14 @@ namespace hw3d {
         if(
             std::all_of(relative_locations_a.begin(), relative_locations_a.end(), [](auto it){ return it > 0; }) ||
             std::all_of(relative_locations_a.begin(), relative_locations_a.end(), [](auto it){ return it < 0; })
-        ) { return false; }
+        ) { std::cout << "1)\n"; return false; }
 
         if(a.lies_on_parallel_planes_with(b)) {
             if(a.lies_on_the_same_plane_with(b)) {
+                std::cout << "2d case\n";
                 return intersection_test_2d(a, b);
             } else {
+                std::cout << "2d case2\n";
                 return false;
             }
         }
@@ -101,7 +115,7 @@ namespace hw3d {
                 [](auto it){ return it > 0; }) ||
             std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
                 [](auto it){ return it < 0; })
-        ) { return false; }
+        ) { std::cout << "relative locations case\n"; return false; }
 
         Line intersection_line1(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
         Line intersection_line2(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
@@ -147,7 +161,7 @@ namespace hw3d {
                 }
             }
         }
-
+        std::cout << "interval overlap case\n";
         return check_interval_overlap(intersection_line1, intersection_line2);
     }
 
