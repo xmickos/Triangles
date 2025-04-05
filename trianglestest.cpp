@@ -1,5 +1,5 @@
 #include<iostream>
-#include"triangles.hpp"
+#include"include/triangles.hpp"
 #include<gtest/gtest.h>
 
 using namespace hw3d;

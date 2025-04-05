@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-set(SRCS algorithm.cpp triangles.hpp)
+set(SRCS include/algorithm.cpp include/triangles.hpp)
 
 add_library(
     triangleslib

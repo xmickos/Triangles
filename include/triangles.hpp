@@ -4,18 +4,29 @@
 
 namespace hw3d {
 
+    class Vector3d;
+
+    using edge = std::pair<Vector3d, Vector3d>;
+
     class Vector3d final {
         public:
             std::vector<double> cs_;
 
         private:
-            double float_tolerance = 1e-9;
+            const double float_tolerance = 1e-9;
 
         public:
             Vector3d(double x_, double y_, double z_) {
                 cs_.push_back(x_);
                 cs_.push_back(y_);
                 cs_.push_back(z_);
+            }
+
+            Vector3d(const edge& e) : cs_(3) {
+                std::transform(
+                    e.second.cbegin(), e.second.cend(), e.first.cbegin(), cs_.begin(),
+                    std::minus<>{}
+                );
             }
 
             Vector3d(const Vector3d& rhs) : cs_(rhs.cbegin(), rhs.cend()) {}
@@ -33,13 +44,19 @@ namespace hw3d {
 
             Vector3d operator+(const Vector3d& rhs) const {
                 Vector3d tmp(*this);
-                std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(), [&](auto it1, auto it2){ return it1 += it2; });
+                std::transform(
+                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
+                    [&](auto it1, auto it2){ return it1 += it2; }
+                );
                 return tmp;
             }
 
             Vector3d operator-(const Vector3d& rhs) const {
                 Vector3d tmp(*this);
-                std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(), [&](auto it1, auto it2){ return it1 -= it2; });
+                std::transform(
+                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
+                    [&](auto it1, auto it2){ return it1 -= it2; }
+                );
                 return tmp;
             }
 
@@ -75,8 +92,6 @@ namespace hw3d {
             std::vector<double>::iterator end() noexcept { return cs_.end(); }
             const double operator[](int i) const { return cs_[i]; }
     };
-
-    using edge = std::pair<Vector3d, Vector3d>;
 
     Vector3d operator*(double lhs, Vector3d& rhs);
 
@@ -132,14 +147,14 @@ namespace hw3d {
             std::vector<edge>::const_iterator ecend() const noexcept { return edges.cend(); }
 
             bool is_degenerate() const {
-                Vector3d tmp1(vertexes[0] - vertexes[1]);
-                Vector3d tmp2(vertexes[1] - vertexes[2]);
+                Vector3d tmp1(edges[0]);
+                Vector3d tmp2(edges[1]);
 
                 return tmp1.cross_product(tmp2).norm() < float_tolerance;
             }
 
             Plane get_plane_equation() const {
-                Vector3d n = (edges[0].second - edges[0].first).cross_product(edges[1].second - edges[1].first).normalize();
+                Vector3d n = (vertexes[1] - vertexes[0]).cross_product(vertexes[2] - vertexes[0]).normalize();
                 return Plane(n, vertexes[1]);
             }
 
