@@ -3,6 +3,20 @@
 
 namespace hw3d {
 
+    std::ostream& operator<<(std::ostream& os, const Triangle& tr) {
+        os << "△(";
+        for(auto it = tr.cbegin(), et = tr.cend(); it != et; it++) {
+            os << *it << ", ";
+        }
+        os << ")";
+        return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Vector3d& vec) {
+        os << "(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
+        return os;
+    }
+
     Vector3d line_plane_intersection(const Line& l, const Triangle& a) {
         double float_tolerance = 1e-9;
         Plane pq = a.get_plane_equation();

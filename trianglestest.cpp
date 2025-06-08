@@ -58,6 +58,10 @@ TEST(UnitTests, Intersection2d) {
     EXPECT_FALSE(intersection_test_2d(T10, T9));
 }
 
+TEST(UnitTests, AABB) {
+
+}
+
 TEST(End2End, Intersection3d) {
     Triangle T1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle T2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));

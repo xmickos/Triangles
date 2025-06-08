@@ -13,33 +13,24 @@ namespace hw3d {
             std::vector<double> cs_;
 
         private:
-            const double float_tolerance = 1e-9;
+            double float_tolerance = 1e-9;
 
         public:
+            Vector3d() : cs_(3, 0.0) {}
+
             Vector3d(double x_, double y_, double z_) {
                 cs_.push_back(x_);
                 cs_.push_back(y_);
                 cs_.push_back(z_);
             }
 
+            Vector3d(double q_) : cs_(3, q_) {}
+
             Vector3d(const edge& e) : cs_(3) {
                 std::transform(
                     e.second.cbegin(), e.second.cend(), e.first.cbegin(), cs_.begin(),
                     std::minus<>{}
                 );
-            }
-
-            Vector3d(const Vector3d& rhs) : cs_(rhs.cbegin(), rhs.cend()) {}
-            Vector3d(Vector3d&& rhs) { std::swap(cs_, rhs.cs_); }
-            Vector3d& operator=(Vector3d& rhs) {
-                if(this == &rhs) return *this;
-                std::swap(*this, rhs);
-                return *this;
-            }
-            Vector3d& operator=(Vector3d&& rhs) {
-                if(this == &rhs) return *this;
-                std::swap(cs_, rhs.cs_);
-                return *this;
             }
 
             Vector3d operator+(const Vector3d& rhs) const {
@@ -91,9 +82,12 @@ namespace hw3d {
             std::vector<double>::iterator begin() noexcept { return cs_.begin(); }
             std::vector<double>::iterator end() noexcept { return cs_.end(); }
             const double operator[](int i) const { return cs_[i]; }
+            double& operator[](int i) { return cs_[i]; }
     };
 
     Vector3d operator*(double lhs, Vector3d& rhs);
+
+    std::ostream& operator<<(std::ostream& os, const Vector3d& vec);
 
     class Line final {
         private:
@@ -172,6 +166,8 @@ namespace hw3d {
                 ) && std::fabs(pq1.d - pq2.d) < float_tolerance;
             }
     };
+
+    std::ostream& operator<<(std::ostream& os, const Triangle& tr);
 
     bool check_interval_overlap(const Line& a, const Line& b);
 
