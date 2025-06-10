@@ -5,12 +5,12 @@ using namespace hw3d;
 
 int main() {
 
-    Triangle T0(Vector3d(0, 0, 0), Vector3d(2, 0, 0), Vector3d(4, 0, 0));
+    Triangle T1(Vector3d(-1, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
 
     // считали в vec и в scene_bb и в max_depth
     std::vector<Triangle> triangles;
-    AABB scene_bb(T0);
-    size_t max_depth;
+    AABB scene_bb(T1);
+    size_t max_depth = 2;
 
     Octree scene_tree(scene_bb, max_depth);
 
