@@ -39,6 +39,10 @@ namespace hw3d {
             }
         }
 
+        bool is_inside(const AABB& outer) {
+            return std::all_of(min.cbegin(), min.cend(), ) // TODO
+        }
+
         std::vector<AABB> subdivide() const {
             std::vector<Vector3d> vertexes(8);
             std::vector<AABB> aabbs(8);
@@ -78,6 +82,7 @@ namespace hw3d {
         private:
             struct Node {
                 AABB bounds;
+                std::vector<size_t> triangle_indices;
                 std::vector<std::unique_ptr<Node>> children;
 
                 Node(AABB bounds_) : bounds(bounds_) {}
@@ -90,11 +95,18 @@ namespace hw3d {
                     for(auto&& aabb : aabbs) {
                         children.push_back(std::make_unique<Node>(aabb));
                     }
-                    // std::transform(aabbs.begin(), aabbs.end(), std::back_inserter(children), [](auto it){ return std::make_unique<Node>(it); });
 
                     for(auto&& child : children) {
                         child->subdivide(curr_depth + 1, max_depth);
                     }
+                }
+
+                double volume() const noexcept {
+                    std::vector<double> dxdydz(3);
+                    std::transform(bounds.min.cbegin(), bounds.min.cend(), bounds.max.cbegin(), dxdydz.begin(),
+                        [](double x1, double x2){ return std::fabs(x1 - x2); }
+                    );
+                    return std::accumulate(dxdydz.begin(), dxdydz.end(), 1f, std::multiplies<double>());
                 }
             };
 
@@ -105,7 +117,17 @@ namespace hw3d {
                 root.subdivide(0, max_depth);
             }
 
-            void insert(const Triangle& tr) {}
+            void insert(const Triangle& tr) {
+                AABB bb(tr);
+                size_t depth = std::floor(std::log2f(root.bounds.volume() / bb.volume()) / 3f);
+                // V_n = V_0 / 8^n => n = std::floor(1/3 * log_2(V_0 / V_n))
+
+                Node* curr_node = &root;
+                size_t curr_depth = 0;
+                while(curr_node.bounds.is_inside(bb) && curr_depth < depth) {
+                    go_down(); // TODO
+                }
+            }
 
             std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {}
     };
