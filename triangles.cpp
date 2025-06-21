@@ -21,11 +21,13 @@ int main() {
 
     Octree scene_tree(scene_bb, max_depth);
 
-    for(auto&& triangle : triangles) {
-        scene_tree.insert(triangle);
+    for(int i = 0; i < triangles.size(); ++i) {
+        scene_tree.insert(triangles[i], i);
     }
 
-    auto set = scene_tree.count_intersections(triangles);
-    std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
+    std::cout << "Success:)" << std::endl;
+
+    // auto set = scene_tree.count_intersections(triangles);
+    // std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
     return 0;
 }
