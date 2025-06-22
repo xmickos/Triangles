@@ -45,9 +45,6 @@ namespace hw3d {
                 auto pair_b = compute_interval(b, d);
                 return pair_a.second >= pair_b.first && pair_a.first <= pair_b.second;
             });
-
-            std::cout << result << std::endl;
-
         return result;
     }
 

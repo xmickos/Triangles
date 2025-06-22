@@ -80,6 +80,7 @@ namespace hw3d {
         }
 
         long double volume() const noexcept { return std::fabs((max[0] - min[0]) * (max[1] - min[1]) * (max[2] - min[2])); }
+        long double diag_len() const noexcept { return std::sqrt((max[0] - min[0])*(max[0] - min[0]) + (max[1] - min[1])*(max[1] - min[1]) + (max[2] - min[2])*(max[2] - min[2])); }
 
     };
 
@@ -116,6 +117,7 @@ namespace hw3d {
             };
 
             Node root;
+            double eps = 1e-5;
 
         public:
             Octree(AABB rootBounds, int max_depth = 10) : root(rootBounds) {
@@ -124,12 +126,17 @@ namespace hw3d {
 
             void insert(const Triangle& tr, size_t idx) {
                 AABB bb(tr);
-                size_t depth = std::floor(std::log2f(root.bounds.volume() / bb.volume()) / 3.0);
-                // V_n = V_0 / 8^n => n = std::floor(1/3 * log_2(V_0 / V_n))
+                #if 0
+                    size_t depth = std::floor(std::log2f(root.bounds.volume() / bb.volume()) / 3.0);    // bad idea
+                    // V_n = V_0 / 8^n => n = std::floor(1/3 * log_2(V_0 / V_n))
+                #endif
+
+                size_t depth =  std::floor(std::log2(root.bounds.diag_len() / (root.bounds.diag_len() + eps)));
+                // diag_0 / diag_n = 2^n => n = std::floor(log2(diag_0 / diag_n));
 
                 Node* curr_node = &root;
                 size_t curr_depth = 0;
-                while(curr_depth < depth) {
+                while(curr_depth <= depth) {
                     auto it = std::find_if(curr_node->children.begin(), curr_node->children.end(),
                         [&](const std::unique_ptr<Node>& child){ return bb.is_inside(child.get()->bounds); }
                     );
@@ -138,14 +145,69 @@ namespace hw3d {
                         return;
                     } else {
                         curr_node = it->get();
-                        curr_depth--;
+                        curr_depth++;
                     }
                 }
                 std::cout << "Failed to insert triangle " << tr << " in the tree :(" << std::endl;
                 std::terminate();
             }
 
-            std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {}
+        private:
+
+            void start_discovering(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+                if(!curr_node.triangle_indices.empty()) {
+                    for(size_t i = 0; i < curr_node.triangle_indices.size(); ++i) {
+                        for(size_t j = 0; j < i; ++j) {
+                            if(intersection_test_3d(triangles[curr_node.triangle_indices[i]], triangles[curr_node.triangle_indices[j]])) {
+                                output_idxs.insert(i);
+                                output_idxs.insert(j);
+                            }
+                        }
+                    }
+                    downstream_counting(curr_node, triangles, output_idxs);
+                }
+                for(const auto& child : curr_node.children) {
+                    start_discovering(*child, triangles, output_idxs);  // could be bad
+                }
+            }
+
+            void downstream_counting(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+                for(auto&& t_idx : curr_node.triangle_indices) {
+                    for(auto&& child : curr_node.children) {
+                        for(auto&& child_t_idx : child->triangle_indices) {
+                            if(intersection_test_3d(triangles[t_idx], triangles[child_t_idx])) {
+                                output_idxs.insert(t_idx);
+                                output_idxs.insert(child_t_idx);
+                            }
+                        }
+                    }
+                }
+            }
+
+        private:
+
+            void dump_(const Node& curr_node) const {
+                if(!curr_node.triangle_indices.empty()) {
+                    std::cout << "(";
+                    std::for_each(curr_node.triangle_indices.begin(), std::next(curr_node.triangle_indices.end(), -1),
+                        [](auto idx){ std::cout << idx << " ";}
+                    );
+                    std::cout << curr_node.triangle_indices.back() << ")";
+                }
+                for(const auto& child : curr_node.children) {
+                    dump_(*child);  // could be bad
+                }
+            }
+
+        public:
+
+            void dump() const { dump_(root); }
+
+            std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {
+                std::unordered_set<size_t> output_idxs;
+                start_discovering(root, vec, output_idxs);
+                return output_idxs;
+            }
     };
 
 }
