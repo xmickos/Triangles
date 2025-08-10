@@ -1,6 +1,7 @@
-#include<unordered_set>
+#include <unordered_set>
 #include "triangles.hpp"
-#include<numeric>
+#include <numeric>
+#include <iostream>
 
 #pragma once
 
@@ -53,7 +54,7 @@ namespace hw3d {
             std::vector<AABB> aabbs(8);
             Vector3d middle_point((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
 
-            /*
+            /*                      6 — min, 0 — max
                    6 --------- 7
                  / |         / |
                 5 --------- 4  |
@@ -63,18 +64,27 @@ namespace hw3d {
                 1 --------- 0
             */
 
-            vertexes[0] = min;
-            vertexes[1] = Vector3d(max[0], min[1], min[2]);
-            vertexes[2] = Vector3d(max[0], max[1], min[2]);
-            vertexes[3] = Vector3d(min[0], max[1], min[2]);
-            vertexes[4] = Vector3d(min[0], min[1], max[2]);
-            vertexes[5] = Vector3d(max[0], max[1], min[2]);
-            vertexes[6] = max;
-            vertexes[7] = Vector3d(max[0], min[1], max[2]);
+            vertexes[0] = max; //
+            vertexes[1] = Vector3d(min[0], max[1], max[2]); //
+            vertexes[2] = Vector3d(min[0], min[1], max[2]); //
+            vertexes[3] = Vector3d(max[0], min[1], max[2]); //
+            vertexes[4] = Vector3d(max[0], max[1], min[2]); //
+            vertexes[5] = Vector3d(min[0], max[1], min[2]); //
+            vertexes[6] = min; //
+            vertexes[7] = Vector3d(max[0], min[1], min[2]); //
 
-            std::transform(vertexes.begin(), vertexes.end(), aabbs.begin(),
-                [&](const Vector3d& vertex){ return AABB(middle_point, vertex); }
-            );
+            aabbs[0] = AABB(vertexes[6], middle_point);
+            aabbs[1] = AABB((vertexes[6] + vertexes[7]) / 2, (vertexes[4] + vertexes[3]) / 2);
+            aabbs[2] = AABB((vertexes[5] + vertexes[6]) / 2, (vertexes[4] + vertexes[1]) / 2);
+            aabbs[3] = AABB((vertexes[4] + vertexes[6]) / 2, (vertexes[4] + vertexes[0]) / 2);
+            aabbs[4] = AABB((vertexes[2] + vertexes[6]) / 2, (vertexes[2] + vertexes[0]) / 2);
+            aabbs[5] = AABB((vertexes[2] + vertexes[7]) / 2, (vertexes[3] + vertexes[0]) / 2);
+            aabbs[6] = AABB((vertexes[6] + vertexes[1]) / 2, (vertexes[1] + vertexes[0]) / 2);
+            aabbs[7] = AABB(middle_point, vertexes[0]);
+
+            // std::transform(vertexes.begin(), vertexes.end(), aabbs.begin(),
+            //     [&](const Vector3d& vertex){ return AABB(middle_point, vertex); }
+            // );
 
             return aabbs;
         }
@@ -131,7 +141,7 @@ namespace hw3d {
                     // V_n = V_0 / 8^n => n = std::floor(1/3 * log_2(V_0 / V_n))
                 #endif
 
-                size_t depth =  std::floor(std::log2(root.bounds.diag_len() / (root.bounds.diag_len() + eps)));
+                size_t depth =  std::floor(std::log2(root.bounds.diag_len() / (bb.diag_len() + eps)));
                 // diag_0 / diag_n = 2^n => n = std::floor(log2(diag_0 / diag_n));
 
                 Node* curr_node = &root;

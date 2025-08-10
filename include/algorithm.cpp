@@ -4,7 +4,8 @@
 namespace hw3d {
 
     std::ostream& operator<<(std::ostream& os, const Triangle& tr) {
-        os << "△(";
+        // os << "△(";
+        os << "(";
         for(auto it = tr.cbegin(), et = tr.cend(); it != et; it++) {
             os << *it << ", ";
         }
@@ -68,6 +69,12 @@ namespace hw3d {
     Vector3d operator*(double lhs, Vector3d& rhs) {
         Vector3d tmp(rhs);
         std::for_each(tmp.begin(), tmp.end(), [&](auto it){ return lhs * it; });
+        return tmp;
+    }
+
+    Vector3d operator/(double lhs, Vector3d& rhs) {
+        Vector3d tmp(rhs);
+        std::for_each(tmp.begin(), tmp.end(), [&](auto it) { return lhs / it; });
         return tmp;
     }
 

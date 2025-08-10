@@ -51,6 +51,19 @@ namespace hw3d {
                 return tmp;
             }
 
+            Vector3d operator/(const Vector3d& rhs) const {
+                Vector3d tmp(*this);
+                std::transform(
+                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
+                    [&](auto it1, auto it2){ return it1 /= it2; }
+                );
+                return tmp;
+            }
+
+            Vector3d operator/(double s) const {
+                return Vector3d({cs_[0] / s, cs_[1] / s, cs_[2] / s});
+            }
+
             Vector3d cross_product(const Vector3d& rhs) const {
                 return Vector3d(
                     cs_[1] * rhs.cs_[2] - rhs.cs_[1] * cs_[2], // y1z2 - y2z1
@@ -72,10 +85,12 @@ namespace hw3d {
                 return Vector3d(cs_[0] / norm_, cs_[1] / norm_, cs_[2] / norm_);
             }
 
+            #if 0
             std::ostream& operator<<(std::ostream& os) const {
                 os << "(" << cs_[0] << ", " << cs_[1] << ", " << cs_[2] << ")";
                 return os;
             }
+            #endif
 
             std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
             std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
@@ -86,6 +101,8 @@ namespace hw3d {
     };
 
     Vector3d operator*(double lhs, Vector3d& rhs);
+
+    Vector3d operator/(double lhs, Vector3d& rhs);
 
     std::ostream& operator<<(std::ostream& os, const Vector3d& vec);
 

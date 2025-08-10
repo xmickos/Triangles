@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-set(SRCS include/algorithm.cpp include/triangles.hpp include/bvh.hpp)
+set(SRCS include/algorithm.cpp include/triangles.hpp include/bvh.hpp include/generate_tests.cpp)
 
 add_library(
     triangleslib
@@ -32,9 +32,20 @@ target_link_libraries(trianglestest
         triangleslib
 )
 
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+
 target_compile_features(triangleslib
     PUBLIC cxx_std_20
 )
+
+# if(APPLE)
+#     add_custom_command(TARGET triangles POST_BUILD
+#         COMMAND dsymutil $<TARGET_FILE:triangles>
+#         COMMENT "Generating dSYM for triangles"
+#     )
+# endif()
+
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(triangles
