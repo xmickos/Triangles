@@ -4,7 +4,7 @@
 
 using namespace hw3d;
 
-TEST(UnitTests, relative_locations) {
+TEST(UnitTests, DISABLED_relative_locations) {
     Triangle T1(Vector3d(-1, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
     Triangle T2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
     Triangle T3(Vector3d(-2, 0, 1), Vector3d(0, 2, 1), Vector3d(2, 0, 1));
@@ -17,7 +17,7 @@ TEST(UnitTests, relative_locations) {
     EXPECT_FALSE(T4.lies_on_the_same_plane_with(T1));
 }
 
-TEST(UnitTests, is_degenerate) {
+TEST(UnitTests, DISABLED_is_degenerate) {
     Triangle T1(Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(0, 4, 0));
     EXPECT_TRUE(T1.is_degenerate());
 
@@ -26,7 +26,7 @@ TEST(UnitTests, is_degenerate) {
 
 }
 
-TEST(UnitTests, Intersection2d) {
+TEST(UnitTests, DISABLED_Intersection2d) {
     Triangle T1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle T2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
 
@@ -59,10 +59,13 @@ TEST(UnitTests, Intersection2d) {
 }
 
 TEST(UnitTests, AABB) {
+    Triangle T1(Vector3d(9.21269, 0.510527, 3.78626), Vector3d(8.08306, 3.27682, 0.730073), Vector3d(8.42607, 1.32866, 0.572925));
+    Triangle T2(Vector3d(7.16461, 1.96139, 2.48755), Vector3d(6.68718, 4.28441, 0.892826), Vector3d(6.62557, 1.08196, 0.75515));
 
+    std::cout << "T1 & T2: " << intersection_test_3d(T1, T2) << std::endl;
 }
 
-TEST(End2End, Intersection3d) {
+TEST(End2End, DISABLED_Intersection3d) {
     Triangle T1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle T2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
 

@@ -26,7 +26,7 @@ int main() {
     // AABB scene_bb(T1);
     // scene_bb.update(T2);
     // scene_bb.update(T3);
-    std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << std::endl;
+    std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << ", " << triangles.size() << " triangles." << std::endl;
     size_t max_depth = 2;
 
     Octree scene_tree(scene_bb, max_depth);
@@ -35,10 +35,10 @@ int main() {
         scene_tree.insert(triangles[i], i);
     }
 
-    // scene_tree.dump();
+    scene_tree.dump();
 
     auto set = scene_tree.count_intersections(triangles);
     std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
-    std::cout << "Empty? " << (set.empty() ? "Yes" : "No") << std::endl;
+    std::cout << std::endl << "Empty? " << (set.empty() ? "Yes" : "No") << std::endl;
     return 0;
 }

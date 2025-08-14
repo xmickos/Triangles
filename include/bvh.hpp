@@ -196,17 +196,17 @@ namespace hw3d {
 
         private:
 
-            void dump_(const Node& curr_node) const {
-                if(!curr_node.triangle_indices.empty()) {
-                    std::cout << "(";
-                    std::for_each(curr_node.triangle_indices.begin(), std::next(curr_node.triangle_indices.end(), -1),
-                        [](auto idx){ std::cout << idx << " ";}
-                    );
-                    std::cout << curr_node.triangle_indices.back() << ")";
+            void dump_(const Node& n) const {
+                std::cout << "([" << n.children.size() << "] ";
+                if (n.triangle_indices.empty()) std::cout << "-";
+                else {
+                    for (size_t i = 0; i < n.triangle_indices.size(); ++i) {
+                        if (i) std::cout << ' ';
+                        std::cout << n.triangle_indices[i];
+                    }
                 }
-                for(const auto& child : curr_node.children) {
-                    dump_(*child);  // could be bad
-                }
+                std::cout << ")";
+                for (const auto& ch : n.children) dump_(*ch);
             }
 
         public:

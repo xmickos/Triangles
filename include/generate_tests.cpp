@@ -108,7 +108,7 @@ std::vector<Triangle> insert_triangles_in_scene(AABB scene_bb, double x_step, do
 
 std::vector<Triangle> generate_zero_intersections_test(Vector3d min, Vector3d max) {
     hw3d::AABB scene_bb(min, max);
-    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 5, 5);
+    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 2.5, 2.5);
     return triangles;
 }
 

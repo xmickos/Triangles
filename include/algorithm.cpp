@@ -113,9 +113,9 @@ namespace hw3d {
 
         if(
             std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
-                [](auto it){ return it > 0; }) ||
+                [](auto it){ return it == true; }) ||
             std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
-                [](auto it){ return it < 0; })
+                [](auto it){ return it == false; })
         ) { return false; }
 
         Line intersection_line1(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
