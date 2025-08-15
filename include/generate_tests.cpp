@@ -1,6 +1,7 @@
 #include "bvh.hpp"
 #include "triangles.hpp"
 #include <random>
+#include <numbers>
 
 using namespace hw3d;
 
@@ -126,4 +127,28 @@ std::vector<Triangle> generate_zero_intersections_test(
     Vector3d max(dist_max(gen), dist_max(gen), dist_max(gen));
 
     return generate_zero_intersections_test(min, max);
+}
+
+struct N_intersections_test_output final {
+    std::vector<Triangles> triangles;
+    int N;
+};
+
+N_intersections_test_output generate_N_intersections_test(Vector3d min, Vector3d max) {
+    hw3d::AABB scene_bb(min, max);
+    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 2.5, 2.5);
+    std::vector<Triangle> triangles_rotated;
+    triangles_rotated.reserve(triangles.size());
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    double pi_rad = std::numbers::pi;
+    std::uniform_real_distribution<> dist(0, pi_rad); // rotate angle is sampled from [0, 180] degrees
+
+    for(auto it = triangles.begin(), et = triangles.end(); it != et; ++it) {
+        Vecto3d normal = it->get_plane_equation().n;
+        Vector3d centroid = std::accumulate(it->cbegin(), it->cend(), Vector3d(0, 0, 0));
+        triangles_rotated.push_back(it->rotate(centroid, normal, dist(gen)));
+    }
+
+    return N_intersections_test_output(triangles_rotated, triangles.size());
 }

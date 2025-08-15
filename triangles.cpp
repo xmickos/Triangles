@@ -13,7 +13,9 @@ int main() {
     // считали в vec и в scene_bb и в max_depth
     Vector3d min = {0, 0, 0};
     Vector3d max = {10, 10, 10};
-    std::vector<Triangle> triangles = generate_zero_intersections_test(min, max);
+    N_intersections_test_output output = generate_N_intersections_test(min, max);
+    std::vector<Triangle> triangles = output.triangles;
+    int N = output.N;
     // Triangle tr = Triangle({5.20426, 5.79955, 5.44044}, {5.73276, 5.65721, 5.39043}, {5.75377, 5.70372, 5.83115});
     // std::vector<Triangle> triangles = {tr};
     AABB scene_bb(min, max);
@@ -40,5 +42,6 @@ int main() {
     auto set = scene_tree.count_intersections(triangles);
     std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
     std::cout << std::endl << "Empty? " << (set.empty() ? "Yes" : "No") << std::endl;
+    std::cout << "Set size is " << set.size() << " and " << N << " were announced.";
     return 0;
 }

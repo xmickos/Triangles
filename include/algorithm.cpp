@@ -66,7 +66,7 @@ namespace hw3d {
         return std::pair<double, double>(min, max);
     }
 
-    Vector3d operator*(double lhs, Vector3d& rhs) {
+    Vector3d operator*(double lhs, const Vector3d& rhs) {
         Vector3d tmp(rhs);
         std::for_each(tmp.begin(), tmp.end(), [&](auto it){ return lhs * it; });
         return tmp;

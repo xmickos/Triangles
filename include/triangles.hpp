@@ -92,6 +92,14 @@ namespace hw3d {
             }
             #endif
 
+            Vector3d rotate_inplace(const Vector3d& axis, double angle_rad);
+
+            Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {
+                Vector3d tmp(*this);
+                tmp = (tmp - O).rotate_inplace(axis, angle_rad) + O;
+                return tmp;
+            }
+
             std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
             std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
             std::vector<double>::iterator begin() noexcept { return cs_.begin(); }
@@ -100,11 +108,17 @@ namespace hw3d {
             double& operator[](int i) { return cs_[i]; }
     };
 
-    Vector3d operator*(double lhs, Vector3d& rhs);
+    Vector3d operator*(double lhs, const Vector3d& rhs);
 
     Vector3d operator/(double lhs, Vector3d& rhs);
 
     std::ostream& operator<<(std::ostream& os, const Vector3d& vec);
+
+    Vector3d Vector3d::rotate_inplace(const Vector3d& axis, double angle_rad) {
+        double cos = std::cos(angle_rad);
+        double sin = std::sin(angle_rad);
+        return dot_product(axis) * (1 - cos) * axis + axis.cross_product(*this) * sin + cos * (*this);
+    }
 
     class Line final {
         private:
@@ -181,6 +195,12 @@ namespace hw3d {
                 return std::all_of(rhs.ecbegin(), rhs.ecend(),
                     [&](auto edge){ return pq1.n.dot_product(edge.second - edge.first) < float_tolerance; }
                 ) && std::fabs(pq1.d - pq2.d) < float_tolerance;
+            }
+
+            Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {
+                std::vector<Vector3d> init_vecs = std::for_each(cbegin(), cend(), [](auto vec){ return vec; });
+                std::transform(init_vecs.begin(), init_vecs.end(), init_vecs.begin(), [&](auto vec){ return (vec - O).rotate_inplace(axis, angle_rad) + O; });
+                return Triangle(init_vecs[0], init_vecs[1], init_vecs[2]);
             }
     };
 
