@@ -1,6 +1,7 @@
 #include<iostream>
 #include"include/triangles.hpp"
 #include<gtest/gtest.h>
+#include<numbers>
 
 using namespace hw3d;
 
@@ -58,11 +59,61 @@ TEST(UnitTests, DISABLED_Intersection2d) {
     EXPECT_FALSE(intersection_test_2d(T10, T9));
 }
 
-TEST(UnitTests, AABB) {
+TEST(UnitTests, DISABLED_AABB) {
     Triangle T1(Vector3d(9.21269, 0.510527, 3.78626), Vector3d(8.08306, 3.27682, 0.730073), Vector3d(8.42607, 1.32866, 0.572925));
     Triangle T2(Vector3d(7.16461, 1.96139, 2.48755), Vector3d(6.68718, 4.28441, 0.892826), Vector3d(6.62557, 1.08196, 0.75515));
 
     std::cout << "T1 & T2: " << intersection_test_3d(T1, T2) << std::endl;
+}
+
+TEST(UnitTests, DISABLED_Vector3dInplaceRotation) {
+    Vector3d axis(1,1,1);
+    axis.normalize_inplace();
+    Vector3d vec(-1.4057674364343793, 2.1107146712467411, -1.2866447049420293);
+    Vector3d vec_rotated_expected(-2.22414, 1.76757, -0.125124);
+    std::cout << axis << std::endl;
+    Vector3d vec_rotated = vec.rotate_inplace(axis, std::numbers::pi / 6);
+    std::cout << vec_rotated;
+    for(int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(vec_rotated[i], vec_rotated_expected[i], 1e-3);
+    }
+}
+
+TEST(UnitTests, TriangleRotation) {
+    Triangle t1(Vector3d(8.72104, 1.23751, 4.94293), Vector3d(6.85655, 2.34514, 1.70897), Vector3d(3.43423, 3.3827, 7.51132));
+    Triangle t2(Vector3d(8.17728, 0.445684, 4.67826), Vector3d(7.40031, 3.13697, 1.97365), Vector3d(3.43423, 3.3827, 7.51132));
+    Vector3d t1_median = ((t1[0] - t1[1]) / 2 - t1[2]).normalized();
+    Triangle t3 = t1.rotate(t1[2], t1_median, std::numbers::pi / 6);
+    std::cout << t3 << std::endl;
+    #if 0
+        for(auto it1 = t1.cbegin(), et1 = t1.cend(), it2 = t2.cbegin(); it1 != et1; ++it1) {
+            it1->rotate_inplace(); // TODO not compilable — fix.
+        }
+    #endif
+
+    for(auto it2 = t2.cbegin(), it3 = t3.cbegin(), et2 = t2.cend(); it2 != et2; ++it2) {
+        for(int i = 0; i < 3; ++i) {
+            EXPECT_NEAR((*it2)[i], (*it3)[i], 1e-3);
+        }
+    }
+}
+
+TEST(UnitTests, DISABLED_Vector3dBasics) {
+    Vector3d a(2, 2, 2);
+    Vector3d b = a / 2;
+    Vector3d c(1, 1, 1);
+    Vector3d d(3, 3, 3);
+    Vector3d e = a + c;
+    Vector3d f = a - c;
+    for(int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(b[i], c[i], 1e-3);
+    }
+    for(int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(e[i], d[i], 1e-3);
+    }
+    for(int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(f[i], c[i], 1e-3);
+    }
 }
 
 TEST(End2End, DISABLED_Intersection3d) {

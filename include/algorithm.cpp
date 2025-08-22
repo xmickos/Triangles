@@ -18,6 +18,41 @@ namespace hw3d {
         return os;
     }
 
+    Vector3d Vector3d::rotate_inplace(const Vector3d& axis, double angle_rad){
+        // TODO fix naming — this method is not an inplace method
+        double cos = std::cos(angle_rad);
+        double sin = std::sin(angle_rad);
+        return dot_product(axis) * (1 - cos) * axis + axis.cross_product(*this) * sin + cos * (*this);
+    }
+
+    Vector3d operator*(double lhs, const Vector3d& rhs) {
+        Vector3d tmp(rhs);
+        std::transform(tmp.begin(), tmp.end(), tmp.begin(), [&](auto it){ return lhs * it; });
+        return tmp;
+    }
+
+    Vector3d operator/(const Vector3d& lhs, const Vector3d& rhs) {
+        Vector3d tmp(lhs);
+        std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(), std::divides<>());
+        return tmp;
+    }
+
+    Vector3d operator/(double lhs, Vector3d& rhs) {
+        Vector3d tmp(rhs);
+        std::transform(tmp.begin(), tmp.end(), tmp.begin(), [&](auto it) { return lhs / it; });
+        return tmp;
+    }
+
+    Vector3d operator*(const Vector3d& lhs, double rhs) {
+        Vector3d tmp(lhs);
+        std::transform(tmp.begin(), tmp.end(), tmp.begin(), [&](auto it){ return rhs * it; });
+        return tmp;
+    }
+
+    Vector3d operator/(const Vector3d lhs, double s) {
+        return Vector3d({lhs.cs_[0] / s, lhs.cs_[1] / s, lhs.cs_[2] / s});
+    }
+
     Vector3d line_plane_intersection(const Line& l, const Triangle& a) {
         double float_tolerance = 1e-9;
         Plane pq = a.get_plane_equation();
@@ -64,18 +99,6 @@ namespace hw3d {
             }
         );
         return std::pair<double, double>(min, max);
-    }
-
-    Vector3d operator*(double lhs, const Vector3d& rhs) {
-        Vector3d tmp(rhs);
-        std::for_each(tmp.begin(), tmp.end(), [&](auto it){ return lhs * it; });
-        return tmp;
-    }
-
-    Vector3d operator/(double lhs, Vector3d& rhs) {
-        Vector3d tmp(rhs);
-        std::for_each(tmp.begin(), tmp.end(), [&](auto it) { return lhs / it; });
-        return tmp;
     }
 
     bool plane_point_location(const Triangle& tr, const Vector3d& p) {

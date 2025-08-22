@@ -1,4 +1,5 @@
 #include<vector>
+#include<format>
 
 #pragma once
 
@@ -35,10 +36,7 @@ namespace hw3d {
 
             Vector3d operator+(const Vector3d& rhs) const {
                 Vector3d tmp(*this);
-                std::transform(
-                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
-                    [&](auto it1, auto it2){ return it1 += it2; }
-                );
+                std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.cbegin(), tmp.cs_.begin(), std::plus<>());
                 return tmp;
             }
 
@@ -49,19 +47,6 @@ namespace hw3d {
                     [&](auto it1, auto it2){ return it1 -= it2; }
                 );
                 return tmp;
-            }
-
-            Vector3d operator/(const Vector3d& rhs) const {
-                Vector3d tmp(*this);
-                std::transform(
-                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
-                    [&](auto it1, auto it2){ return it1 /= it2; }
-                );
-                return tmp;
-            }
-
-            Vector3d operator/(double s) const {
-                return Vector3d({cs_[0] / s, cs_[1] / s, cs_[2] / s});
             }
 
             Vector3d cross_product(const Vector3d& rhs) const {
@@ -80,9 +65,20 @@ namespace hw3d {
                 return std::sqrt(cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2]);
             }
 
-            Vector3d normalize() const {
-                double norm_ = norm() > 0 ? norm() : float_tolerance;
-                return Vector3d(cs_[0] / norm_, cs_[1] / norm_, cs_[2] / norm_);
+            Vector3d normalized() const {
+                double len2 = cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2];
+                if(len2 < float_tolerance) {
+                    throw std::invalid_argument(
+                        std::format("Vector {} has zero norm.", static_cast<const void*>(this))
+                    );
+                }
+                double inv = 1 / std::sqrt(len2);
+                return {cs_[0] * inv, cs_[1] * inv, cs_[2] * inv};
+            }
+
+            void normalize_inplace() {
+                Vector3d tmp = normalized();
+                std::swap(tmp, *this);
             }
 
             #if 0
@@ -95,6 +91,7 @@ namespace hw3d {
             Vector3d rotate_inplace(const Vector3d& axis, double angle_rad);
 
             Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {
+                // TODO fix overriding arguments logic
                 Vector3d tmp(*this);
                 tmp = (tmp - O).rotate_inplace(axis, angle_rad) + O;
                 return tmp;
@@ -110,15 +107,19 @@ namespace hw3d {
 
     Vector3d operator*(double lhs, const Vector3d& rhs);
 
+    Vector3d operator*(const Vector3d& lhs, double rhs);
+
     Vector3d operator/(double lhs, Vector3d& rhs);
 
-    std::ostream& operator<<(std::ostream& os, const Vector3d& vec);
+    Vector3d operator/(const Vector3d& lhs, const Vector3d& rhs);
 
-    Vector3d Vector3d::rotate_inplace(const Vector3d& axis, double angle_rad) {
-        double cos = std::cos(angle_rad);
-        double sin = std::sin(angle_rad);
-        return dot_product(axis) * (1 - cos) * axis + axis.cross_product(*this) * sin + cos * (*this);
-    }
+    Vector3d operator/(double lhs, Vector3d& rhs);
+
+    Vector3d operator*(const Vector3d& lhs, double rhs);
+
+    Vector3d operator/(const Vector3d lhs, double s);
+
+    std::ostream& operator<<(std::ostream& os, const Vector3d& vec);
 
     class Line final {
         private:
@@ -170,6 +171,7 @@ namespace hw3d {
             std::vector<Vector3d>::const_iterator cend() const noexcept { return vertexes.cend(); }
             std::vector<edge>::const_iterator ecbegin() const noexcept { return edges.cbegin(); }
             std::vector<edge>::const_iterator ecend() const noexcept { return edges.cend(); }
+            const Vector3d operator[](int i) const { return vertexes[i]; }
 
             bool is_degenerate() const {
                 Vector3d tmp1(edges[0]);
@@ -179,7 +181,7 @@ namespace hw3d {
             }
 
             Plane get_plane_equation() const {
-                Vector3d n = (vertexes[1] - vertexes[0]).cross_product(vertexes[2] - vertexes[0]).normalize();
+                Vector3d n = (vertexes[1] - vertexes[0]).cross_product(vertexes[2] - vertexes[0]).normalized();
                 return Plane(n, vertexes[1]);
             }
 
@@ -198,7 +200,7 @@ namespace hw3d {
             }
 
             Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {
-                std::vector<Vector3d> init_vecs = std::for_each(cbegin(), cend(), [](auto vec){ return vec; });
+                std::vector<Vector3d> init_vecs = vertexes;
                 std::transform(init_vecs.begin(), init_vecs.end(), init_vecs.begin(), [&](auto vec){ return (vec - O).rotate_inplace(axis, angle_rad) + O; });
                 return Triangle(init_vecs[0], init_vecs[1], init_vecs[2]);
             }
