@@ -206,7 +206,7 @@ namespace hw3d {
 
     bool intersection_test_2d(const Triangle& a, const Triangle& b);
 
-    bool plane_point_location(const Triangle& tr, const Vector3d& p);
+    int plane_point_location(const Triangle& tr, const Vector3d& p);
 
     bool intersection_test_3d(const Triangle& a, const Triangle& b);
 

@@ -128,6 +128,7 @@ TEST(UnitTests, DISABLED_Vector3dBasics) {
 }
 
 TEST(UnitTests, DISABLED_Intersection3d) {
+
     Triangle t1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle t2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
 
@@ -193,6 +194,18 @@ TEST(UnitTests, DISABLED_Intersection3d) {
 
     EXPECT_TRUE(intersection_test_3d(t21, t22));
     EXPECT_TRUE(intersection_test_3d(t22, t21));
+
+    Triangle t23(Vector3d(13.2473, 12.1462, 15.3973), Vector3d(14.1533, 16.5503, 10.9817), Vector3d(15.0053, 14.4069, 13.6928));
+    Triangle t24(Vector3d(13.5954, 10.3765, 8.84058), Vector3d(13.9047, 8.06557, 6.10273), Vector3d(14.9951, 13.3611, 8.21311));
+
+    EXPECT_FALSE(intersection_test_3d(t23, t24));
+    EXPECT_FALSE(intersection_test_3d(t24, t23));
+
+    Triangle t25(Vector3d(15.5805, 7.37613, 12.3125), Vector3d(16.0595, 8.31296, 13.5955), Vector3d(16.68, 8.14817, 13.6254));
+    Triangle t26(Vector3d(11.433, 9.42941, 12.7986), Vector3d(11.9465, 9.13992, 13.6813), Vector3d(12.7467, 9.14475, 12.2916));
+
+    EXPECT_FALSE(intersection_test_3d(t25, t26));
+    EXPECT_FALSE(intersection_test_3d(t26, t25));
 }
 
 TEST(End2End, DISABLED_N_intersections) {
@@ -202,9 +215,9 @@ TEST(End2End, DISABLED_N_intersections) {
     std::cout << triangles.size() << " triangles." << std::endl;
     int N = output.N;
     AABB scene_bb(min, max);
-    for(auto&& tr : triangles) {
-        std::cout << tr << std::endl;
-    }
+    // for(auto&& tr : triangles) {
+    //     std::cout << tr << std::endl;
+    // }
     std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << ", " << triangles.size() << " triangles." << std::endl;
     size_t max_depth = 2;
 
@@ -215,7 +228,7 @@ TEST(End2End, DISABLED_N_intersections) {
     }
 
     auto set = scene_tree.count_intersections(triangles);
-    std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
+    // std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
     std::cout << std::endl << "Empty? " << (set.empty() ? "Yes" : "No") << std::endl;
     std::cout << "Set size is " << set.size() << " and " << N << " were announced.";
     EXPECT_EQ(set.size(), N);
@@ -227,22 +240,21 @@ TEST(End2End, zero_intersections) {
     std::cout << triangles.size() << " triangles." << std::endl;
     int N = 0;
     AABB scene_bb(min, max);
-    for(auto&& tr : triangles) {
-        std::cout << tr << std::endl;
-    }
+    // for(auto&& tr : triangles) {
+    //     std::cout << tr << std::endl;
+    // }
     std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << ", " << triangles.size() << " triangles." << std::endl;
-    size_t max_depth = 2;
 
-    Octree scene_tree(scene_bb, max_depth);
-
-    scene_tree.dump();
+    Octree scene_tree(scene_bb);
 
     for(int i = 0; i < triangles.size(); ++i) {
         scene_tree.insert(triangles[i], i);
     }
+    // scene_tree.dump();
+    // std::cout << std::endl;
 
     auto set = scene_tree.count_intersections(triangles);
-    std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
+    // std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });
     std::cout << std::endl << "Empty? " << (set.empty() ? "Yes" : "No") << std::endl;
     std::cout << "Set size is " << set.size() << " and " << N << " were announced.";
     EXPECT_EQ(set.size(), N);

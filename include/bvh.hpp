@@ -126,7 +126,7 @@ namespace hw3d {
             double eps = 1e-5;
 
         public:
-            Octree(AABB rootBounds, int max_depth = 4) : root(rootBounds) {
+            Octree(AABB rootBounds, int max_depth = 3) : root(rootBounds) {
                 root.subdivide(0, max_depth);
             }
 

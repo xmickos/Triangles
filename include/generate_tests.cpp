@@ -19,7 +19,7 @@ std::vector<Triangle> insert_triangles_in_scene(AABB scene_bb, double x_step, do
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(scene_bb.min.cs_[0], scene_bb.max.cs_[0]);
-    double padding_ratio = 0.1;
+    double padding_ratio = 0.3;
 
     for(int x_i = 0; x_i < x_cells_count; ++x_i) {
         for(int y_i = 0; y_i < y_cells_count; ++y_i) {
@@ -109,7 +109,7 @@ std::vector<Triangle> insert_triangles_in_scene(AABB scene_bb, double x_step, do
 
 std::vector<Triangle> generate_zero_intersections_test(Vector3d min, Vector3d max) {
     hw3d::AABB scene_bb(min, max);
-    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 2.5, 2.5);
+    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 1, 1, 1);
     return triangles;
 }
 
