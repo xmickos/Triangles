@@ -66,14 +66,12 @@ TEST(UnitTests, DISABLED_AABB) {
     std::cout << "T1 & T2: " << intersection_test_3d(T1, T2) << std::endl;
 }
 
-TEST(UnitTests, DISABLED_Vector3dInplaceRotation) {
-    Vector3d axis(1,1,1);
+TEST(UnitTests, Vector3dInplaceRotation) {
+    Vector3d axis(-0.332861, -0.523709, -0.784176);
     axis.normalize_inplace();
-    Vector3d vec(-1.4057674364343793, 2.1107146712467411, -1.2866447049420293);
-    Vector3d vec_rotated_expected(-2.22414, 1.76757, -0.125124);
-    std::cout << axis << std::endl;
-    Vector3d vec_rotated = vec.rotate_inplace(axis, std::numbers::pi / 6);
-    std::cout << vec_rotated;
+    Vector3d vec(8.72104, 1.23751, 4.94293);
+    Vector3d vec_rotated_expected(8.692969795954639, 4.189590689466975, 2.983309009799692);
+    Vector3d vec_rotated = vec.rotate_around_origin(axis, std::numbers::pi / 6);
     for(int i = 0; i < 3; ++i) {
         EXPECT_NEAR(vec_rotated[i], vec_rotated_expected[i], 1e-3);
     }
@@ -81,21 +79,31 @@ TEST(UnitTests, DISABLED_Vector3dInplaceRotation) {
 
 TEST(UnitTests, TriangleRotation) {
     Triangle t1(Vector3d(8.72104, 1.23751, 4.94293), Vector3d(6.85655, 2.34514, 1.70897), Vector3d(3.43423, 3.3827, 7.51132));
-    Triangle t2(Vector3d(8.17728, 0.445684, 4.67826), Vector3d(7.40031, 3.13697, 1.97365), Vector3d(3.43423, 3.3827, 7.51132));
-    Vector3d t1_median = ((t1[0] - t1[1]) / 2 - t1[2]).normalized();
+    Triangle t2(Vector3d(8.960368405157547, 2.1976996545899965, 4.826846902216941), Vector3d(6.617221594842453, 1.3849503454100034, 1.8250530977830586), Vector3d(3.43423, 3.3827, 7.51132));
+    Vector3d t1_median = ((t1[0] + t1[1]) / 2 - t1[2]).normalized();
     Triangle t3 = t1.rotate(t1[2], t1_median, std::numbers::pi / 6);
-    std::cout << t3 << std::endl;
-    #if 0
-        for(auto it1 = t1.cbegin(), et1 = t1.cend(), it2 = t2.cbegin(); it1 != et1; ++it1) {
-            it1->rotate_inplace(); // TODO not compilable — fix.
-        }
-    #endif
 
-    for(auto it2 = t2.cbegin(), it3 = t3.cbegin(), et2 = t2.cend(); it2 != et2; ++it2) {
+    std::vector<Vector3d> t1_rotated_one_by_one;
+    for(auto it1 = t1.cbegin(), et1 = t1.cend(), it2 = t2.cbegin(); it1 != et1; ++it1) {
+        t1_rotated_one_by_one.push_back(it1->rotate(t1[2], t1_median, std::numbers::pi / 6));
+    }
+
+    for(
+        auto t1_rotated_one_by_one_it = t1_rotated_one_by_one.cbegin(), it3 = t3.cbegin(), t1_rotated_one_by_one_et = t1_rotated_one_by_one.cend();
+        t1_rotated_one_by_one_it != t1_rotated_one_by_one_et;
+        ++t1_rotated_one_by_one_it, ++it3
+    ) {
+        for(int i = 0; i < 3; ++i) {
+            EXPECT_NEAR((*t1_rotated_one_by_one_it)[i], (*it3)[i], 1e-3);
+        }
+    }
+
+    for(auto it2 = t2.cbegin(), it3 = t3.cbegin(), et2 = t2.cend(); it2 != et2; ++it2, ++it3) {
         for(int i = 0; i < 3; ++i) {
             EXPECT_NEAR((*it2)[i], (*it3)[i], 1e-3);
         }
     }
+
 }
 
 TEST(UnitTests, DISABLED_Vector3dBasics) {

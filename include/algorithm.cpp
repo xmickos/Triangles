@@ -18,10 +18,9 @@ namespace hw3d {
         return os;
     }
 
-    Vector3d Vector3d::rotate_inplace(const Vector3d& axis, double angle_rad){
-        // TODO fix naming — this method is not an inplace method
+    Vector3d Vector3d::rotate_around_origin(const Vector3d& axis, double angle_rad) const {
         double cos = std::cos(angle_rad);
-        double sin = std::sin(angle_rad);
+        double sin = std::sin(-angle_rad);
         return dot_product(axis) * (1 - cos) * axis + axis.cross_product(*this) * sin + cos * (*this);
     }
 

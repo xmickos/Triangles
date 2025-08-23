@@ -136,7 +136,7 @@ struct N_intersections_test_output final {
 
 N_intersections_test_output generate_N_intersections_test(Vector3d min, Vector3d max) {
     hw3d::AABB scene_bb(min, max);
-    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 10, 10, 10);
+    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 5, 5);
     std::vector<Triangle> triangles_rotated;
     triangles_rotated.reserve(triangles.size());
     std::random_device rd;

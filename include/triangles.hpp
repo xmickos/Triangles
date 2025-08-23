@@ -49,7 +49,7 @@ namespace hw3d {
                 return tmp;
             }
 
-            Vector3d cross_product(const Vector3d& rhs) const {
+            Vector3d cross_product(const Vector3d& rhs) const { // [*this x rhs]
                 return Vector3d(
                     cs_[1] * rhs.cs_[2] - rhs.cs_[1] * cs_[2], // y1z2 - y2z1
                     cs_[2] * rhs.cs_[0] - cs_[0] * rhs.cs_[2], // z1x2 - x1z2
@@ -72,7 +72,7 @@ namespace hw3d {
                         std::format("Vector {} has zero norm.", static_cast<const void*>(this))
                     );
                 }
-                double inv = 1 / std::sqrt(len2);
+                double inv = 1.0 / std::sqrt(len2);
                 return {cs_[0] * inv, cs_[1] * inv, cs_[2] * inv};
             }
 
@@ -88,12 +88,11 @@ namespace hw3d {
             }
             #endif
 
-            Vector3d rotate_inplace(const Vector3d& axis, double angle_rad);
+            Vector3d rotate_around_origin(const Vector3d& axis, double angle_rad) const;
 
             Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {
-                // TODO fix overriding arguments logic
                 Vector3d tmp(*this);
-                tmp = (tmp - O).rotate_inplace(axis, angle_rad) + O;
+                tmp = (tmp - O).rotate_around_origin(axis, angle_rad) + O;
                 return tmp;
             }
 
@@ -201,7 +200,7 @@ namespace hw3d {
 
             Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {
                 std::vector<Vector3d> init_vecs = vertexes;
-                std::transform(init_vecs.begin(), init_vecs.end(), init_vecs.begin(), [&](auto vec){ return (vec - O).rotate_inplace(axis, angle_rad) + O; });
+                std::transform(init_vecs.begin(), init_vecs.end(), init_vecs.begin(), [&](auto vec){ return (vec - O).rotate_around_origin(axis, angle_rad) + O; });
                 return Triangle(init_vecs[0], init_vecs[1], init_vecs[2]);
             }
     };
