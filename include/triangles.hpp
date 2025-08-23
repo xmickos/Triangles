@@ -81,13 +81,6 @@ namespace hw3d {
                 std::swap(tmp, *this);
             }
 
-            #if 0
-            std::ostream& operator<<(std::ostream& os) const {
-                os << "(" << cs_[0] << ", " << cs_[1] << ", " << cs_[2] << ")";
-                return os;
-            }
-            #endif
-
             Vector3d rotate_around_origin(const Vector3d& axis, double angle_rad) const;
 
             Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {

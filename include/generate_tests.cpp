@@ -134,9 +134,13 @@ struct N_intersections_test_output final {
     int N;
 };
 
-N_intersections_test_output generate_N_intersections_test(Vector3d min, Vector3d max) {
-    hw3d::AABB scene_bb(min, max);
-    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, 5, 5, 5);
+N_intersections_test_output generate_N_intersections_test(double count_scale_ratio) {
+    if(count_scale_ratio > 1 || count_scale_ratio < 0.1) {
+        throw std::invalid_argument("'count_scale_ratio' argument must be between 0.1 and 1.");
+    }
+    count_scale_ratio /= 0.1;
+    hw3d::AABB scene_bb(Vector3d({0, 0, 0}), Vector3d({100, 100, 100}));
+    std::vector<Triangle> triangles = insert_triangles_in_scene(scene_bb, count_scale_ratio, count_scale_ratio, count_scale_ratio);
     std::vector<Triangle> triangles_rotated;
     triangles_rotated.reserve(triangles.size());
     std::random_device rd;
@@ -144,9 +148,9 @@ N_intersections_test_output generate_N_intersections_test(Vector3d min, Vector3d
     double pi_rad = std::numbers::pi / 6;
     std::uniform_real_distribution<> dist(0, pi_rad); // rotate angle is sampled from [0, 30] degrees
 
-    for(auto it = triangles.begin(), et = triangles.end(); it != et; ++it) {
-        Vector3d median = (((*it)[0] + (*it)[1]) / 2 - (*it)[2]).normalized();
-        triangles_rotated.push_back(it->rotate((*it)[2], median, std::numbers::pi / 6));
+    for(auto&& tr: triangles) {
+        Vector3d median = ((tr[0] + tr[1]) / 2 - tr[2]).normalized();
+        triangles_rotated.push_back(tr.rotate(tr[2], median, dist(gen)));
     }
 
     triangles.insert(triangles.end(), triangles_rotated.begin(), triangles_rotated.end());

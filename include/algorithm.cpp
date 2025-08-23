@@ -105,11 +105,13 @@ namespace hw3d {
         Vector3d n_ = pq.n;
         Vector3d p_ = pq.p;
 
-        return n_.dot_product(p_) > 0;
+        return n_.dot_product(p_ - p) > 0;
     }
 
     bool intersection_test_3d(const Triangle& a, const Triangle& b) {
-        if(a.is_degenerate() || b.is_degenerate()) { return false; }
+        if(a.is_degenerate() || b.is_degenerate()) {
+            return false;
+        }
 
         std::vector<bool> relative_locations_a(3); // contains booleans describing how
         std::vector<bool> relative_locations_b(3); // points of 'b' are positioned relative to 'a' and vice versa

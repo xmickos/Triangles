@@ -19,6 +19,6 @@ struct N_intersections_test_output final {
     int N;
 };
 
-N_intersections_test_output generate_N_intersections_test(hw3d::Vector3d min, hw3d::Vector3d max);
+N_intersections_test_output generate_N_intersections_test(double count_scale_ratio);
 
 std::vector<hw3d::Triangle> insert_triangles_in_scene(hw3d::AABB scene_bb, double x_step, double y_step, double z_step);

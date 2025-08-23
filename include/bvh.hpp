@@ -65,13 +65,13 @@ namespace hw3d {
             */
 
             vertexes[0] = max; //
-            vertexes[1] = Vector3d(min[0], max[1], max[2]); //
-            vertexes[2] = Vector3d(min[0], min[1], max[2]); //
-            vertexes[3] = Vector3d(max[0], min[1], max[2]); //
-            vertexes[4] = Vector3d(max[0], max[1], min[2]); //
-            vertexes[5] = Vector3d(min[0], max[1], min[2]); //
-            vertexes[6] = min; //
-            vertexes[7] = Vector3d(max[0], min[1], min[2]); //
+            vertexes[1] = Vector3d(min[0], max[1], max[2]);
+            vertexes[2] = Vector3d(min[0], min[1], max[2]);
+            vertexes[3] = Vector3d(max[0], min[1], max[2]);
+            vertexes[4] = Vector3d(max[0], max[1], min[2]);
+            vertexes[5] = Vector3d(min[0], max[1], min[2]);
+            vertexes[6] = min;
+            vertexes[7] = Vector3d(max[0], min[1], min[2]);
 
             aabbs[0] = AABB(vertexes[6], middle_point);
             aabbs[1] = AABB((vertexes[6] + vertexes[7]) / 2, (vertexes[4] + vertexes[3]) / 2);
@@ -81,10 +81,6 @@ namespace hw3d {
             aabbs[5] = AABB((vertexes[2] + vertexes[7]) / 2, (vertexes[3] + vertexes[0]) / 2);
             aabbs[6] = AABB((vertexes[6] + vertexes[1]) / 2, (vertexes[1] + vertexes[0]) / 2);
             aabbs[7] = AABB(middle_point, vertexes[0]);
-
-            // std::transform(vertexes.begin(), vertexes.end(), aabbs.begin(),
-            //     [&](const Vector3d& vertex){ return AABB(middle_point, vertex); }
-            // );
 
             return aabbs;
         }
@@ -130,16 +126,12 @@ namespace hw3d {
             double eps = 1e-5;
 
         public:
-            Octree(AABB rootBounds, int max_depth = 10) : root(rootBounds) {
+            Octree(AABB rootBounds, int max_depth = 4) : root(rootBounds) {
                 root.subdivide(0, max_depth);
             }
 
             void insert(const Triangle& tr, size_t idx) {
                 AABB bb(tr);
-                #if 0
-                    size_t depth = std::floor(std::log2f(root.bounds.volume() / bb.volume()) / 3.0);    // bad idea
-                    // V_n = V_0 / 8^n => n = std::floor(1/3 * log_2(V_0 / V_n))
-                #endif
 
                 size_t depth =  std::floor(std::log2(root.bounds.diag_len() / (bb.diag_len() + eps)));
                 // diag_0 / diag_n = 2^n => n = std::floor(log2(diag_0 / diag_n));
@@ -169,15 +161,15 @@ namespace hw3d {
                     for(size_t i = 0; i < curr_node.triangle_indices.size(); ++i) {
                         for(size_t j = 0; j < i; ++j) {
                             if(intersection_test_3d(triangles[curr_node.triangle_indices[i]], triangles[curr_node.triangle_indices[j]])) {
-                                output_idxs.insert(i);
-                                output_idxs.insert(j);
+                                output_idxs.insert(curr_node.triangle_indices[i]);
+                                output_idxs.insert(curr_node.triangle_indices[j]);
                             }
                         }
                     }
                     downstream_counting(curr_node, triangles, output_idxs);
                 }
                 for(const auto& child : curr_node.children) {
-                    start_discovering(*child, triangles, output_idxs);  // could be bad
+                    start_discovering(*child, triangles, output_idxs);
                 }
             }
 
