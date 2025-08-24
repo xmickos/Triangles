@@ -161,6 +161,9 @@ namespace hw3d {
                     for(size_t i = 0; i < curr_node.triangle_indices.size(); ++i) {
                         for(size_t j = 0; j < i; ++j) {
                             if(intersection_test_3d(triangles[curr_node.triangle_indices[i]], triangles[curr_node.triangle_indices[j]])) {
+                                #if 0
+                                    std::cout << triangles[curr_node.triangle_indices[i]] << " and " << triangles[curr_node.triangle_indices[j]] << std::endl;
+                                #endif
                                 output_idxs.insert(curr_node.triangle_indices[i]);
                                 output_idxs.insert(curr_node.triangle_indices[j]);
                             }
@@ -178,6 +181,9 @@ namespace hw3d {
                     for(auto&& child : curr_node.children) {
                         for(auto&& child_t_idx : child->triangle_indices) {
                             if(intersection_test_3d(triangles[t_idx], triangles[child_t_idx])) {
+                                #if 0
+                                    std::cout <<triangles[t_idx] << " and " << triangles[child_t_idx] << std::endl;
+                                #endif
                                 output_idxs.insert(t_idx);
                                 output_idxs.insert(child_t_idx);
                             }

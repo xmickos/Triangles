@@ -123,10 +123,26 @@ namespace hw3d {
 
             const Vector3d& p() const noexcept { return p_; }
             const Vector3d& d() const noexcept { return d_; }
+
             bool contains(const Vector3d& p) const {
                 Vector3d tmp = p - p_;
                 return std::fabs(tmp.cross_product(d_).norm()) < float_tolerance;
             }
+    };
+
+    struct Interval final {
+        Vector3d p1, p2;
+
+        bool contains(const Vector3d& rhs) const noexcept {
+            double float_tolerance = 1e-9;
+            return Line(p1, p2).contains(rhs) &&
+                ((p1 - rhs).dot_product(p2 - p1) * (p2 - rhs).dot_product(p2 - p1) < 0 ||
+                std::fabs((p1 - rhs).dot_product(p2 - p1) * (p2 - rhs).dot_product(p2 - p1)) < float_tolerance);
+        }
+
+        bool overlaps_with(const Interval& rhs) const noexcept {
+            return contains(rhs.p1) || contains(rhs.p2) || rhs.contains(p1) || rhs.contains(p2);
+        }
     };
 
     struct Plane final {
@@ -189,6 +205,17 @@ namespace hw3d {
                 return std::all_of(rhs.ecbegin(), rhs.ecend(),
                     [&](auto edge){ return pq1.n.dot_product(edge.second - edge.first) < float_tolerance; }
                 ) && std::fabs(pq1.d - pq2.d) < float_tolerance;
+            }
+
+            bool contains_point(Vector3d p_) const {
+                std::vector<char> s_i(3);
+                Plane pl = get_plane_equation();
+                for(int i = 0; i < 3; ++i) {
+                    Line l(edges[i].first, edges[i].second);
+                    s_i[i] = pl.n.dot_product(p_ - l.p());
+                }
+                return std::all_of(s_i.begin(), s_i.end(), [](auto it){ return it >= 0; })
+                    || std::all_of(s_i.begin(), s_i.end(), [](auto it){ return it <= 0; });
             }
 
             Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {

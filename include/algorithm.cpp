@@ -64,10 +64,10 @@ namespace hw3d {
         Vector3d pa = pq.p;
         Vector3d ld = l.d();
         Vector3d lp = l.p();
-        if(std::fabs(na.dot_product(ld) < float_tolerance)) {
+        if(std::fabs(na.dot_product(ld)) < float_tolerance) {
             return Vector3d(NAN, NAN, NAN);
         } else {
-            double t = - (na.dot_product(lp) + pq.n.dot_product(pq.p)) / na.dot_product(ld);
+            double t = na.dot_product(pa - lp) / na.dot_product(ld);
             return Vector3d(lp + t * ld);
         }
     }
@@ -118,18 +118,18 @@ namespace hw3d {
             return false;
         }
 
-        std::vector<int> relative_locations_a(3); // contains booleans describing how
-        std::vector<int> relative_locations_b(3); // points of 'b' are positioned relative to 'a' and vice versa
-        std::transform(b.cbegin(), b.cend(), relative_locations_a.begin(),
+        std::vector<int> b_points_related_to_a(3); // contains booleans describing how
+        std::vector<int> a_points_related_to_b(3); // points of 'b' are positioned relative to 'a' and vice versa
+        std::transform(b.cbegin(), b.cend(), b_points_related_to_a.begin(),
             [&](auto it){ return plane_point_location(a, it); }
         );
-        std::transform(a.cbegin(), a.cend(), relative_locations_b.begin(),
+        std::transform(a.cbegin(), a.cend(), a_points_related_to_b.begin(),
             [&](auto it){ return plane_point_location(b, it); }
         );
 
         if(
-            std::all_of(relative_locations_a.begin(), relative_locations_a.end(), [](auto it){ return it < 0; }) ||
-            std::all_of(relative_locations_a.begin(), relative_locations_a.end(), [](auto it){ return it > 0; })
+            std::all_of(b_points_related_to_a.begin(), b_points_related_to_a.end(), [](auto it){ return it < 0; }) ||
+            std::all_of(b_points_related_to_a.begin(), b_points_related_to_a.end(), [](auto it){ return it > 0; })
         ) { return false; }
 
         if(a.lies_on_parallel_planes_with(b)) {
@@ -141,67 +141,127 @@ namespace hw3d {
         }
 
         if(
-            std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
+            std::all_of(a_points_related_to_b.begin(), a_points_related_to_b.end(),
                 [](auto it){ return it < 0; }) ||
-            std::all_of(relative_locations_b.begin(), relative_locations_b.end(),
+            std::all_of(a_points_related_to_b.begin(), a_points_related_to_b.end(),
                 [](auto it){ return it > 0; })
         ) { return false; }
 
-        Line intersection_line1(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
-        Line intersection_line2(Vector3d(0, 0, 0), Vector3d(0, 0, 0));
+        Interval intersection_interval1;
+        Interval intersection_interval2;
 
-        if(relative_locations_a[0] < 0) {
-            std::transform(relative_locations_a.begin(), relative_locations_a.end(), relative_locations_a.begin(), [](auto it){ return -it;});
-        }
-        if(relative_locations_b[0] < 0) {
-            std::transform(relative_locations_b.begin(), relative_locations_b.end(), relative_locations_b.begin(), [](auto it){ return -it;});
-        }
+        int num_of_zeros_a = std::count_if(
+            b_points_related_to_a.begin(),
+            b_points_related_to_a.end(),
+            [](auto it){ return it == 0; }
+        );
 
-        if(relative_locations_a[0] > 0) {
-            if(relative_locations_a[1] > 0) { // [ + + - ]
-                Vector3d b_anchor = b[2];
-                Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
-                Vector3d p2 = line_plane_intersection(Line(b_anchor, b[1]), a);
-                intersection_line1 = Line(p1, p2);
-            } else { // == ?
-                if(relative_locations_a[2] > 0) { // [ + - + ]
-                    Vector3d b_anchor = b[1];
-                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
-                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
-                    intersection_line1 = Line(p1, p2);
-                } else { // [ + - - ]
-                    Vector3d b_anchor = b[1];
-                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
-                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
-                    intersection_line1 = Line(p1, p2);
-                }
-            }
-        }
+        int num_of_zeros_b = std::count_if(
+            a_points_related_to_b.begin(),
+            a_points_related_to_b.end(),
+            [](auto it){ return it == 0; }
+        );
 
-        if(relative_locations_b[0] > 0) {
-            if(relative_locations_b[1] > 0) { // [ + + - ]
-                Vector3d a_anchor = a[2];
-                Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
-                Vector3d p2 = line_plane_intersection(Line(a_anchor, a[1]), b);
-                intersection_line2 = Line(p1, p2);
-            } else {
-                if(relative_locations_b[2] > 0) { // [ + - + ]
-                    Vector3d a_anchor = a[1];
-                    Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
-                    Vector3d p2 = line_plane_intersection(Line(a_anchor, a[2]), b);
-                    intersection_line2 = Line(p1, p2);
-                } else { // [ + - - ]
+        switch(num_of_zeros_a) {
+            case 2:
+                if(b_points_related_to_a[0] != 0) {
                     Vector3d a_anchor = a[0];
                     Vector3d p1 = line_plane_intersection(Line(a_anchor, a[1]), b);
                     Vector3d p2 = line_plane_intersection(Line(a_anchor, a[2]), b);
-                    intersection_line2 = Line(p1, p2);
+                    intersection_interval1 = Interval(p1, p2);
+                } else if(b_points_related_to_a[1] != 0) {
+                    Vector3d a_anchor = a[1];
+                    Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
+                    Vector3d p2 = line_plane_intersection(Line(a_anchor, a[2]), b);
+                    intersection_interval1 = Interval(p1, p2);
+                } else if(b_points_related_to_a[2] != 0) {
+                    Vector3d a_anchor = a[2];
+                    Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
+                    Vector3d p2 = line_plane_intersection(Line(a_anchor, a[1]), b);
+                    intersection_interval1 = Interval(p1, p2);
                 }
-            }
+            case 1:
+                if(b_points_related_to_a[0] == 0) {
+                    return b.contains_point(a[0]);
+                }
+                if(b_points_related_to_a[1] == 0) {
+                    return b.contains_point(a[1]);
+                }
+                return b.contains_point(a[2]);
+            case 0:
+                if(b_points_related_to_a[0] < 0) {
+                    std::transform(b_points_related_to_a.begin(), b_points_related_to_a.end(), b_points_related_to_a.begin(), [](auto it){ return -it;});
+                }
+                if(b_points_related_to_a[1] > 0) { // [ + + - ]
+                    Vector3d b_anchor = b[2];
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[1]), a);
+                    intersection_interval1 = Interval(p1, p2);
+                } else {
+                    if(b_points_related_to_a[2] > 0) { // [ + - + ]
+                        Vector3d b_anchor = b[1];
+                        Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
+                        Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
+                        intersection_interval1 = Interval(p1, p2);
+                    } else { // [ + - - ]
+                        Vector3d b_anchor = b[0];
+                        Vector3d p1 = line_plane_intersection(Line(b_anchor, b[1]), a);
+                        Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
+                        intersection_interval1 = Interval(p1, p2);
+                    }
+                }
         }
-        return check_interval_overlap(intersection_line1, intersection_line2);
-    }
 
-    bool check_interval_overlap(const Line& a, const Line& b) {
-        return a.contains(b.p()) || a.contains(b.p() + b.d());
+        switch(num_of_zeros_b) {
+            case 2:
+                if(a_points_related_to_b[0] != 0) {
+                    Vector3d b_anchor = b[0];
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[1]), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
+                    intersection_interval1 = Interval(p1, p2);
+                } else if(a_points_related_to_b[1] != 0) {
+                    Vector3d b_anchor = b[1];
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[2]), a);
+                    intersection_interval1 = Interval(p1, p2);
+                } else if(a_points_related_to_b[2] != 0) {
+                    Vector3d b_anchor = b[2];
+                    Vector3d p1 = line_plane_intersection(Line(b_anchor, b[0]), a);
+                    Vector3d p2 = line_plane_intersection(Line(b_anchor, b[1]), a);
+                    intersection_interval1 = Interval(p1, p2);
+                }
+            case 1:
+                if(a_points_related_to_b[0] == 0) {
+                    return a.contains_point(b[0]);
+                }
+                if(a_points_related_to_b[1] == 0) {
+                    return a.contains_point(b[1]);
+                }
+                return a.contains_point(b[2]);
+            case 0:
+                if(a_points_related_to_b[0] < 0) {
+                    std::transform(a_points_related_to_b.begin(), a_points_related_to_b.end(), a_points_related_to_b.begin(), [](auto it){ return -it;});
+                }
+                if(a_points_related_to_b[1] > 0) { // [ + + - ]
+                    Vector3d a_anchor = a[2];
+                    Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
+                    Vector3d p2 = line_plane_intersection(Line(a_anchor, a[1]), b);
+                    intersection_interval2 = Interval(p1, p2);
+                } else {
+                    if(a_points_related_to_b[2] > 0) { // [ + - + ]
+                        Vector3d a_anchor = a[1];
+                        Vector3d p1 = line_plane_intersection(Line(a_anchor, a[0]), b);
+                        Vector3d p2 = line_plane_intersection(Line(a_anchor, a[2]), b);
+                        intersection_interval2 = Interval(p1, p2);
+                    } else { // [ + - - ]
+                        Vector3d a_anchor = a[0];
+                        Vector3d p1 = line_plane_intersection(Line(a_anchor, a[1]), b);
+                        Vector3d p2 = line_plane_intersection(Line(a_anchor, a[2]), b);
+                        intersection_interval2 = Interval(p1, p2);
+                    }
+                }
+        }
+
+        return intersection_interval1.overlaps_with(intersection_interval2);
     }
 }
