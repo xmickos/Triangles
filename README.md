@@ -18,12 +18,6 @@ make
 cd build
 ctest
 ```
-## How to build the project
-```
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cd build
-make
-```
 
 ## Example
 ```
