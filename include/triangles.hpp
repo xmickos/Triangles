@@ -150,26 +150,17 @@ namespace hw3d {
 
     class Triangle final {
         private:
-            std::vector<Vector3d> vertexes;
-            std::vector<edge> edges;
-            double float_tolerance = 1e-9;
-
+            std::array<Vector3d, 3> vertexes;
+            std::array<edge, 3> edges;
         public:
-            Triangle(const Vector3d& a, const Vector3d& b, const Vector3d& c) {
-                vertexes.push_back(a);
-                vertexes.push_back(b);
-                vertexes.push_back(c);
+            const static inline double float_tolerance = 1e-9;
 
-                edges.push_back(edge(a, b));
-                edges.push_back(edge(b, c));
-                edges.push_back(edge(c, a));
+            Triangle(const Vector3d& a, const Vector3d& b, const Vector3d& c) : vertexes({a, b, c}), edges({edge(a, b), edge(b, c), edge(c, a)}) {}
 
-            }
-
-            std::vector<Vector3d>::const_iterator cbegin() const noexcept { return vertexes.cbegin(); }
-            std::vector<Vector3d>::const_iterator cend() const noexcept { return vertexes.cend(); }
-            std::vector<edge>::const_iterator ecbegin() const noexcept { return edges.cbegin(); }
-            std::vector<edge>::const_iterator ecend() const noexcept { return edges.cend(); }
+            std::array<Vector3d, 3>::const_iterator cbegin() const noexcept { return vertexes.cbegin(); }
+            std::array<Vector3d, 3>::const_iterator cend() const noexcept { return vertexes.cend(); }
+            std::array<edge, 3>::const_iterator ecbegin() const noexcept { return edges.cbegin(); }
+            std::array<edge, 3>::const_iterator ecend() const noexcept { return edges.cend(); }
             const Vector3d operator[](int i) const { return vertexes[i]; }
 
             bool is_degenerate() const {
@@ -210,7 +201,7 @@ namespace hw3d {
             }
 
             Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {
-                std::vector<Vector3d> init_vecs = vertexes;
+                std::array<Vector3d, 3> init_vecs = vertexes;
                 std::transform(init_vecs.begin(), init_vecs.end(), init_vecs.begin(), [&](auto vec){ return (vec - O).rotate_around_origin(axis, angle_rad) + O; });
                 return Triangle(init_vecs[0], init_vecs[1], init_vecs[2]);
             }

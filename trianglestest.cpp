@@ -86,10 +86,8 @@ TEST(UnitTests, TriangleRotation) {
     Vector3d t1_median = ((t1[0] + t1[1]) / 2 - t1[2]).normalized();
     Triangle t3 = t1.rotate(t1[2], t1_median, std::numbers::pi / 6);
 
-    std::vector<Vector3d> t1_rotated_one_by_one;
-    for(auto it1 = t1.cbegin(), et1 = t1.cend(), it2 = t2.cbegin(); it1 != et1; ++it1) {
-        t1_rotated_one_by_one.push_back(it1->rotate(t1[2], t1_median, std::numbers::pi / 6));
-    }
+    std::array<Vector3d, 3> t1_rotated_one_by_one;
+    std::transform(t1.cbegin(), t1.cend(), t1_rotated_one_by_one.begin(), [&](auto it){ return it.rotate(t1[2], t1_median, std::numbers::pi / 6); });
 
     for(
         auto t1_rotated_one_by_one_it = t1_rotated_one_by_one.cbegin(), it3 = t3.cbegin(), t1_rotated_one_by_one_et = t1_rotated_one_by_one.cend();
@@ -221,9 +219,6 @@ TEST(End2End, N_intersections) {
     std::cout << triangles.size() << " triangles." << std::endl;
     int N = output.N;
     AABB scene_bb(min, max);
-    // for(auto&& tr : triangles) {
-    //     std::cout << tr << std::endl;
-    // }
     std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << ", " << triangles.size() << " triangles." << std::endl;
     size_t max_depth = 2;
 
@@ -246,9 +241,6 @@ TEST(End2End, zero_intersections) {
     std::cout << triangles.size() << " triangles." << std::endl;
     int N = 0;
     AABB scene_bb(min, max);
-    // for(auto&& tr : triangles) {
-    //     std::cout << tr << std::endl;
-    // }
     std::cout << "scene_bb: " << scene_bb.max << " and " << scene_bb.min << ", " << triangles.size() << " triangles." << std::endl;
 
     Octree scene_tree(scene_bb);
@@ -256,8 +248,6 @@ TEST(End2End, zero_intersections) {
     for(int i = 0; i < triangles.size(); ++i) {
         scene_tree.insert(triangles[i], i);
     }
-    // scene_tree.dump();
-    // std::cout << std::endl;
 
     auto set = scene_tree.count_intersections(triangles);
     // std::for_each(set.begin(), set.end(), [](auto i){ std::cout << i << " "; });

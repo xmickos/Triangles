@@ -8,12 +8,12 @@ int main() {
 
     size_t N;
     double x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    std::cin >> N;
 
     std::vector<Triangle> triangles;
     triangles.reserve(N);
-    AABB scene_bb;
 
-    std::cin >> N;
+    AABB scene_bb;
 
     for(int i = 0; i < N; ++i) {
         std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
@@ -25,11 +25,12 @@ int main() {
     Octree scene_tree(scene_bb);
 
     for(int i = 0; i < triangles.size(); ++i) {
-        scene_tree.insert(triangles[i], i);
-    }
+        scene_tree.insert(triangles[i], i);         // TODO add padding for final AABB & cache AABBs for triangles
+    }                                               // instead of constructing a new one in each insert
 
     std::unordered_set<size_t> indexes = scene_tree.count_intersections(triangles);
-    std::cout << indexes.size() << std::endl;
+    std::for_each(indexes.begin(), indexes.end(), [](auto it){ std::cout << it << " "; });
+    std::cout << std::endl;
 
     return 0;
 }
