@@ -8,37 +8,39 @@
 namespace hw3d {
 
     struct AABB final {
-        Vector3d min, max;
+        Vector3d min { std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
+        Vector3d max { -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max() };
 
         AABB() = default;
         AABB(const Vector3d& min_, const Vector3d& max_) : min(min_), max(max_) {}
-        AABB(const Triangle& tr)  {
-            Vector3d min_(std::numeric_limits<double>::max()), max_(-std::numeric_limits<double>::max());
-
-            for(auto vertex = tr.cbegin(), et = tr.cend(); vertex != et; ++vertex) {
-                min_[0] = std::min((*vertex)[0], min_[0]);
-                min_[1] = std::min((*vertex)[1], min_[1]);
-                min_[2] = std::min((*vertex)[2], min_[2]);
-
-                max_[0] = std::max((*vertex)[0], max_[0]);
-                max_[1] = std::max((*vertex)[1], max_[1]);
-                max_[2] = std::max((*vertex)[2], max_[2]);
-            }
-
-            max = max_;
-            min = min_;
-        }
+        AABB(const Triangle& tr) { update(tr); }
 
         void update(const Triangle& tr) {
             for(auto vertex = tr.cbegin(), et = tr.cend(); vertex != et; ++vertex) {
-                min[0] = std::min((*vertex)[0], min[0]);
-                min[1] = std::min((*vertex)[1], min[1]);
-                min[2] = std::min((*vertex)[2], min[2]);
-
-                max[0] = std::max((*vertex)[0], max[0]);
-                max[1] = std::max((*vertex)[1], max[1]);
-                max[2] = std::max((*vertex)[2], max[2]);
+                expand(*vertex);
             }
+        }
+
+        void expand_raw(double x, double y, double z) {
+            expand(Vector3d{x, y, z});
+        }
+
+        void expand(const Vector3d& v) noexcept {
+            min[0] = std::fmin(min[0], v[0]);
+            min[1] = std::fmin(min[1], v[1]);
+            min[2] = std::fmin(min[2], v[2]);
+
+            max[0] = std::fmax(max[0], v[0]);
+            max[1] = std::fmax(max[1], v[1]);
+            max[2] = std::fmax(max[2], v[2]);
+        }
+
+        inline void expand_triangle_raw(double x1, double y1, double z1,
+                                double x2, double y2, double z2,
+                                double x3, double y3, double z3) noexcept {
+            expand_raw(x1, y1, z1);
+            expand_raw(x2, y2, z2);
+            expand_raw(x3, y3, z3);
         }
 
         bool is_inside(const AABB& outer) { // "this" is inside "outer"
@@ -55,8 +57,8 @@ namespace hw3d {
             Vector3d middle_point((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
 
             /*                      6 — min, 0 — max
-                   6 --------- 7
-                 / |         / |
+                6 --------- 7
+                / |         / |
                 5 --------- 4  |
                 |  |        |  |
                 |  2 -------|--3

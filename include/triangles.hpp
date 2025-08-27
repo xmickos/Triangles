@@ -5,96 +5,87 @@
 
 namespace hw3d {
 
-    class Vector3d;
+    struct Vector3d;
 
     using edge = std::pair<Vector3d, Vector3d>;
 
-    class Vector3d final {
-        public:
-            std::vector<double> cs_;
+    struct Vector3d final {
+        std::array<double, 3> cs_;
 
-        private:
-            double float_tolerance = 1e-9;
+        const static inline double float_tolerance = 1e-9;
 
-        public:
-            Vector3d() : cs_(3, 0.0) {}
+        Vector3d() = default;
 
-            Vector3d(double x_, double y_, double z_) {
-                cs_.push_back(x_);
-                cs_.push_back(y_);
-                cs_.push_back(z_);
-            }
+        Vector3d(double x_, double y_, double z_) : cs_{x_, y_, z_} {}
 
-            Vector3d(double q_) : cs_(3, q_) {}
+        Vector3d(const edge& e) {
+            std::transform(
+                e.second.cbegin(), e.second.cend(), e.first.cbegin(), cs_.begin(),
+                std::minus<>{}
+            );
+        }
 
-            Vector3d(const edge& e) : cs_(3) {
-                std::transform(
-                    e.second.cbegin(), e.second.cend(), e.first.cbegin(), cs_.begin(),
-                    std::minus<>{}
+        Vector3d operator+(const Vector3d& rhs) const {
+            Vector3d tmp(*this);
+            std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.cbegin(), tmp.cs_.begin(), std::plus<>());
+            return tmp;
+        }
+
+        Vector3d operator-(const Vector3d& rhs) const {
+            Vector3d tmp(*this);
+            std::transform(
+                tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
+                [&](auto it1, auto it2){ return it1 -= it2; }
+            );
+            return tmp;
+        }
+
+        Vector3d cross_product(const Vector3d& rhs) const { // [*this x rhs]
+            return Vector3d(
+                cs_[1] * rhs.cs_[2] - rhs.cs_[1] * cs_[2], // y1z2 - y2z1
+                cs_[2] * rhs.cs_[0] - cs_[0] * rhs.cs_[2], // z1x2 - x1z2
+                cs_[0] * rhs.cs_[1] - rhs.cs_[0] * cs_[1]  // x1y2 - x2y1
+            );
+        }
+
+        double dot_product(const Vector3d& rhs) const {
+            return cs_[0] * rhs.cs_[0] + cs_[1] * rhs.cs_[1] + cs_[2] * rhs.cs_[2];
+        }
+
+        double norm() const {
+            return std::sqrt(cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2]);
+        }
+
+        Vector3d normalized() const {
+            double len2 = cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2];
+            if(len2 < float_tolerance) {
+                throw std::invalid_argument(
+                    std::format("Vector {} has zero norm.", static_cast<const void*>(this))
                 );
             }
+            double inv = 1.0 / std::sqrt(len2);
+            return {cs_[0] * inv, cs_[1] * inv, cs_[2] * inv};
+        }
 
-            Vector3d operator+(const Vector3d& rhs) const {
-                Vector3d tmp(*this);
-                std::transform(tmp.cbegin(), tmp.cend(), rhs.cs_.cbegin(), tmp.cs_.begin(), std::plus<>());
-                return tmp;
-            }
+        void normalize_inplace() {
+            Vector3d tmp = normalized();
+            std::swap(tmp, *this);
+        }
 
-            Vector3d operator-(const Vector3d& rhs) const {
-                Vector3d tmp(*this);
-                std::transform(
-                    tmp.cbegin(), tmp.cend(), rhs.cs_.begin(), tmp.cs_.begin(),
-                    [&](auto it1, auto it2){ return it1 -= it2; }
-                );
-                return tmp;
-            }
+        Vector3d rotate_around_origin(const Vector3d& axis, double angle_rad) const;
 
-            Vector3d cross_product(const Vector3d& rhs) const { // [*this x rhs]
-                return Vector3d(
-                    cs_[1] * rhs.cs_[2] - rhs.cs_[1] * cs_[2], // y1z2 - y2z1
-                    cs_[2] * rhs.cs_[0] - cs_[0] * rhs.cs_[2], // z1x2 - x1z2
-                    cs_[0] * rhs.cs_[1] - rhs.cs_[0] * cs_[1]  // x1y2 - x2y1
-                );
-            }
+        Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {
+            Vector3d tmp(*this);
+            tmp = (tmp - O).rotate_around_origin(axis, angle_rad) + O;
+            return tmp;
+        }
 
-            double dot_product(const Vector3d& rhs) const {
-                return cs_[0] * rhs.cs_[0] + cs_[1] * rhs.cs_[1] + cs_[2] * rhs.cs_[2];
-            }
-
-            double norm() const {
-                return std::sqrt(cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2]);
-            }
-
-            Vector3d normalized() const {
-                double len2 = cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2];
-                if(len2 < float_tolerance) {
-                    throw std::invalid_argument(
-                        std::format("Vector {} has zero norm.", static_cast<const void*>(this))
-                    );
-                }
-                double inv = 1.0 / std::sqrt(len2);
-                return {cs_[0] * inv, cs_[1] * inv, cs_[2] * inv};
-            }
-
-            void normalize_inplace() {
-                Vector3d tmp = normalized();
-                std::swap(tmp, *this);
-            }
-
-            Vector3d rotate_around_origin(const Vector3d& axis, double angle_rad) const;
-
-            Vector3d rotate(const Vector3d& O, const Vector3d axis, double angle_rad) const {
-                Vector3d tmp(*this);
-                tmp = (tmp - O).rotate_around_origin(axis, angle_rad) + O;
-                return tmp;
-            }
-
-            std::vector<double>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
-            std::vector<double>::const_iterator cend() const noexcept { return cs_.cend(); }
-            std::vector<double>::iterator begin() noexcept { return cs_.begin(); }
-            std::vector<double>::iterator end() noexcept { return cs_.end(); }
-            const double operator[](int i) const { return cs_[i]; }
-            double& operator[](int i) { return cs_[i]; }
+        std::array<double, 3>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
+        std::array<double, 3>::const_iterator cend() const noexcept { return cs_.cend(); }
+        std::array<double, 3>::iterator begin() noexcept { return cs_.begin(); }
+        std::array<double, 3>::iterator end() noexcept { return cs_.end(); }
+        const double operator[](int i) const { return cs_[i]; }
+        double& operator[](int i) { return cs_[i]; }
     };
 
     Vector3d operator*(double lhs, const Vector3d& rhs);
