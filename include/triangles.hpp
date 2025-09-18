@@ -1,5 +1,4 @@
 #include<vector>
-#include<format>
 
 #pragma once
 
@@ -59,9 +58,7 @@ namespace hw3d {
         Vector3d normalized() const {
             double len2 = cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2];
             if(len2 < float_tolerance) {
-                throw std::invalid_argument(
-                    std::format("Vector {} has zero norm.", static_cast<const void*>(this))
-                );
+                throw std::invalid_argument("Vector has zero norm.");
             }
             double inv = 1.0 / std::sqrt(len2);
             return {cs_[0] * inv, cs_[1] * inv, cs_[2] * inv};
