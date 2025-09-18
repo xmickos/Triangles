@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 project("triangles")
 project("trianglestest")
 
@@ -38,14 +41,6 @@ message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 target_compile_features(triangleslib
     PUBLIC cxx_std_20
 )
-
-# if(APPLE)
-#     add_custom_command(TARGET triangles POST_BUILD
-#         COMMAND dsymutil $<TARGET_FILE:triangles>
-#         COMMENT "Generating dSYM for triangles"
-#     )
-# endif()
-
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(triangles
