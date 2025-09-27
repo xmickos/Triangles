@@ -1,4 +1,10 @@
-#include<vector>
+#include <vector>
+#include <array>
+#include <cmath>
+#include <utility>
+#include <algorithm>
+#include <stdexcept>
+#include <iostream>
 
 #pragma once
 
@@ -81,7 +87,7 @@ namespace hw3d {
         std::array<double, 3>::const_iterator cend() const noexcept { return cs_.cend(); }
         std::array<double, 3>::iterator begin() noexcept { return cs_.begin(); }
         std::array<double, 3>::iterator end() noexcept { return cs_.end(); }
-        const double operator[](int i) const { return cs_[i]; }
+        double operator[](int i) const { return cs_[i]; }
         double& operator[](int i) { return cs_[i]; }
     };
 
@@ -120,6 +126,9 @@ namespace hw3d {
 
     struct Interval final {
         Vector3d p1, p2;
+
+        Interval() {}
+        Interval(const Vector3d& p1_, const Vector3d& p2_) : p1(p1_), p2(p2_) {}
 
         bool contains(const Vector3d& rhs) const noexcept {
             double float_tolerance = 1e-9;

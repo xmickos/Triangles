@@ -2,6 +2,8 @@
 #include "triangles.hpp"
 #include <numeric>
 #include <iostream>
+#include <memory>
+#include <functional>
 
 #pragma once
 

@@ -224,7 +224,7 @@ TEST(End2End, N_intersections) {
 
     Octree scene_tree(scene_bb, max_depth);
 
-    for(int i = 0; i < triangles.size(); ++i) {
+    for(size_t i = 0; i < triangles.size(); ++i) {
         scene_tree.insert(triangles[i], i);
     }
 
@@ -245,7 +245,7 @@ TEST(End2End, zero_intersections) {
 
     Octree scene_tree(scene_bb);
 
-    for(int i = 0; i < triangles.size(); ++i) {
+    for(size_t i = 0; i < triangles.size(); ++i) {
         scene_tree.insert(triangles[i], i);
     }
 

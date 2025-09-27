@@ -15,7 +15,7 @@ int main() {
 
     AABB scene_bb;
 
-    for(int i = 0; i < N; ++i) {
+    for(size_t i = 0; i < N; ++i) {
         std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
 
         scene_bb.expand_triangle_raw(x1, y1, z1, x2, y2, z2, x3, y3, z3);
@@ -24,7 +24,7 @@ int main() {
 
     Octree scene_tree(scene_bb);
 
-    for(int i = 0; i < triangles.size(); ++i) {
+    for(size_t i = 0; i < triangles.size(); ++i) {
         scene_tree.insert(triangles[i], i);         // TODO add padding for final AABB & cache AABBs for triangles
     }                                               // instead of constructing a new one in each insert
 

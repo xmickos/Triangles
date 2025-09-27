@@ -25,9 +25,9 @@ std::vector<Triangle> insert_triangles_in_scene(AABB scene_bb, double x_step, do
     double delta_y = y_step * padding_ratio;
     double delta_z = z_step * padding_ratio;
 
-    for(int x_i = 0; x_i < x_cells_count; ++x_i) {
-        for(int y_i = 0; y_i < y_cells_count; ++y_i) {
-            for(int z_i = 0; z_i < z_cells_count; ++z_i) {
+    for(size_t x_i = 0; x_i < x_cells_count; ++x_i) {
+        for(size_t y_i = 0; y_i < y_cells_count; ++y_i) {
+            for(size_t z_i = 0; z_i < z_cells_count; ++z_i) {
                 Triangle tr(
                     Vector3d(
                             scale_to_interval(

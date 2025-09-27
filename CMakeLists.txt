@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 project("triangles")
@@ -12,22 +12,27 @@ FetchContent_Declare(
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-set(SRCS include/algorithm.cpp include/triangles.hpp include/bvh.hpp include/generate_tests.cpp)
+set(SRCS include/algorithm.cpp include/generate_tests.cpp)
 
 add_library(
     triangleslib
     STATIC ${SRCS}
 )
 
+target_include_directories(
+    triangleslib
+    PUBLIC include
+)
+
 add_executable(triangles
     ${SRCS} triangles.cpp
 )
-add_executable(trianglestest
-    ${SRCS} trianglestest.cpp
-)
-
 target_link_libraries(triangles
     PRIVATE triangleslib
+)
+
+add_executable(trianglestest
+    ${SRCS} trianglestest.cpp
 )
 target_link_libraries(trianglestest
     PRIVATE
@@ -36,11 +41,6 @@ target_link_libraries(trianglestest
 )
 
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-
-
-target_compile_features(triangleslib
-    PUBLIC cxx_std_20
-)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(triangles
@@ -52,6 +52,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         PUBLIC
             -g
             -O0
+            -Wextra
+            -Werror=implicit-function-declaration
+            -Wmissing-include-dirs
     )
     target_compile_options(trianglestest
         PUBLIC
