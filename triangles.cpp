@@ -28,8 +28,10 @@ int main() {
         scene_tree.insert(triangles[i], i);         // TODO add padding for final AABB & cache AABBs for triangles
     }                                               // instead of constructing a new one in each insert
 
-    std::unordered_set<size_t> indexes = scene_tree.count_intersections(triangles);
-    std::for_each(indexes.begin(), indexes.end(), [](auto it){ std::cout << it << " "; });
+    std::vector<size_t> indexes(triangles.size() / 2);
+    indexes = scene_tree.count_intersections(triangles);
+    std::sort(indexes.begin(), indexes.end());
+    std::for_each(indexes.begin(), indexes.end(), [](auto it){ std::cout << it << std::endl; });
     std::cout << std::endl;
 
     return 0;

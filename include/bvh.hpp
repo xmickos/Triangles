@@ -160,7 +160,7 @@ namespace hw3d {
 
         private:
 
-            void start_discovering(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+            void start_discovering(const Node& curr_node, const std::vector<Triangle>& triangles, std::vector<size_t>& output_idxs) const {
                 if(!curr_node.triangle_indices.empty()) {
                     for(size_t i = 0; i < curr_node.triangle_indices.size(); ++i) {
                         for(size_t j = 0; j < i; ++j) {
@@ -168,8 +168,8 @@ namespace hw3d {
                                 #if 0
                                     std::cout << triangles[curr_node.triangle_indices[i]] << " and " << triangles[curr_node.triangle_indices[j]] << std::endl;
                                 #endif
-                                output_idxs.insert(curr_node.triangle_indices[i]);
-                                output_idxs.insert(curr_node.triangle_indices[j]);
+                                output_idxs.emplace_back(curr_node.triangle_indices[i]);
+                                output_idxs.emplace_back(curr_node.triangle_indices[j]);
                             }
                         }
                     }
@@ -180,7 +180,7 @@ namespace hw3d {
                 }
             }
 
-            void downstream_counting(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+            void downstream_counting(const Node& curr_node, const std::vector<Triangle>& triangles, std::vector<size_t>& output_idxs) const {
                 for(auto&& t_idx : curr_node.triangle_indices) {
                     for(auto&& child : curr_node.children) {
                         for(auto&& child_t_idx : child->triangle_indices) {
@@ -188,8 +188,8 @@ namespace hw3d {
                                 #if 0
                                     std::cout <<triangles[t_idx] << " and " << triangles[child_t_idx] << std::endl;
                                 #endif
-                                output_idxs.insert(t_idx);
-                                output_idxs.insert(child_t_idx);
+                                output_idxs.emplace_back(t_idx);
+                                output_idxs.emplace_back(child_t_idx);
                             }
                         }
                     }
@@ -215,8 +215,8 @@ namespace hw3d {
 
             void dump() const { dump_(root); }
 
-            std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {
-                std::unordered_set<size_t> output_idxs;
+            std::vector<size_t> count_intersections(std::vector<Triangle>& vec) const {
+                std::vector<size_t> output_idxs;
                 start_discovering(root, vec, output_idxs);
                 return output_idxs;
             }

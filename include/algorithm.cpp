@@ -8,6 +8,7 @@ namespace hw3d {
         return (T(0) < val) - (val < T(0));
     }
 
+
     std::ostream& operator<<(std::ostream& os, const Triangle& tr) {
         // os << "△(";
         os << "(";
