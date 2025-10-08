@@ -12,7 +12,7 @@ FetchContent_Declare(
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-set(SRCS include/algorithm.cpp include/generate_tests.cpp)
+set(SRCS include/algorithm.cpp include/utils.cpp)
 
 add_library(
     triangleslib
@@ -41,6 +41,10 @@ target_link_libraries(trianglestest
 )
 
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+if(DEFINED SPEED_BENCH)
+    target_compile_definitions(triangles PRIVATE SPEED_BENCH=${SPEED_BENCH})
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(triangles

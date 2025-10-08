@@ -8,7 +8,7 @@
 
 using namespace hw3d;
 
-TEST(UnitTests, DISABLED_relative_locations) {
+TEST(UnitTests, relative_locations) {
     Triangle t1(Vector3d(-1, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
     Triangle t2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
     Triangle t3(Vector3d(-2, 0, 1), Vector3d(0, 2, 1), Vector3d(2, 0, 1));
@@ -21,7 +21,7 @@ TEST(UnitTests, DISABLED_relative_locations) {
     EXPECT_FALSE(t4.lies_on_the_same_plane_with(t1));
 }
 
-TEST(UnitTests, DISABLED_is_degenerate) {
+TEST(UnitTests, is_degenerate) {
     Triangle t1(Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(0, 4, 0));
     EXPECT_TRUE(t1.is_degenerate());
 
@@ -30,7 +30,7 @@ TEST(UnitTests, DISABLED_is_degenerate) {
 
 }
 
-TEST(UnitTests, DISABLED_Intersection2d) {
+TEST(UnitTests, Intersection2d) {
     Triangle t1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle t2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
 
@@ -62,7 +62,7 @@ TEST(UnitTests, DISABLED_Intersection2d) {
     EXPECT_FALSE(intersection_test_2d(t10, t9));
 }
 
-TEST(UnitTests, DISABLED_AABB) {
+TEST(UnitTests, AABB) {
     Triangle t1(Vector3d(9.21269, 0.510527, 3.78626), Vector3d(8.08306, 3.27682, 0.730073), Vector3d(8.42607, 1.32866, 0.572925));
     Triangle t2(Vector3d(7.16461, 1.96139, 2.48755), Vector3d(6.68718, 4.28441, 0.892826), Vector3d(6.62557, 1.08196, 0.75515));
 
@@ -70,7 +70,7 @@ TEST(UnitTests, DISABLED_AABB) {
     EXPECT_FALSE(intersection_test_3d(t2, t1));
 }
 
-TEST(UnitTests, DISABLED_Vector3dInplaceRotation) {
+TEST(UnitTests, Vector3dInplaceRotation) {
     Vector3d axis(-0.332861, -0.523709, -0.784176);
     axis.normalize_inplace();
     Vector3d vec(8.72104, 1.23751, 4.94293);
@@ -81,7 +81,7 @@ TEST(UnitTests, DISABLED_Vector3dInplaceRotation) {
     }
 }
 
-TEST(UnitTests, DISABLED_TriangleRotation) {
+TEST(UnitTests, TriangleRotation) {
     Triangle t1(Vector3d(8.72104, 1.23751, 4.94293), Vector3d(6.85655, 2.34514, 1.70897), Vector3d(3.43423, 3.3827, 7.51132));
     Triangle t2(Vector3d(8.960368405157547, 2.1976996545899965, 4.826846902216941), Vector3d(6.617221594842453, 1.3849503454100034, 1.8250530977830586), Vector3d(3.43423, 3.3827, 7.51132));
     Vector3d t1_median = ((t1[0] + t1[1]) / 2 - t1[2]).normalized();
@@ -108,7 +108,7 @@ TEST(UnitTests, DISABLED_TriangleRotation) {
 
 }
 
-TEST(UnitTests, DISABLED_Vector3dBasics) {
+TEST(UnitTests, Vector3dBasics) {
     Vector3d a(2, 2, 2);
     Vector3d b = a / 2;
     Vector3d c(1, 1, 1);
@@ -126,7 +126,7 @@ TEST(UnitTests, DISABLED_Vector3dBasics) {
     }
 }
 
-TEST(UnitTests, DISABLED_Intersection3d) {
+TEST(UnitTests, Intersection3d) {
 
     Triangle t1(Vector3d(0, 2, 0), Vector3d(2, 0, 0), Vector3d(2.74289,2.21191,0));
     Triangle t2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
@@ -213,12 +213,12 @@ TEST(UnitTests, DISABLED_Intersection3d) {
     EXPECT_TRUE(intersection_test_3d(t28, t27));
 }
 
-TEST(End2End, Generate_n_intersections_test_file) {
-    Vector3d min(0, 0, 0), max(100, 100, 100);
-    N_intersections_test_output output = generate_N_intersections_test(1);
+TEST(End2End, DISABLED_Generate_n_intersections_test_file) {
+    Vector3d min(0, 0, 0), max(1000, 1000, 1000);
+    N_intersections_test_output output = generate_N_intersections_test(0.5);
     std::vector<Triangle> triangles = output.triangles;
     std::ofstream out;
-    out.open("../tests/2000_in_2000_intersections.txt");
+    out.open("../tests/16000_in_16000_intersections.txt");
     out << triangles.size() << std::endl;
     for(auto&& tr : triangles) {
         for(auto it = tr.cbegin(), et = tr.cend(); it != et; it++) {
@@ -231,7 +231,7 @@ TEST(End2End, Generate_n_intersections_test_file) {
     out.close();
 }
 
-TEST(End2End, DISABLED_N_intersections) {
+TEST(End2End, N_intersections) {
     Vector3d min(0, 0, 0), max(100, 100, 100);
     N_intersections_test_output output = generate_N_intersections_test(1);
     std::vector<Triangle> triangles = output.triangles;
@@ -254,7 +254,7 @@ TEST(End2End, DISABLED_N_intersections) {
     EXPECT_EQ(set.size(), N);
 }
 
-TEST(End2End, DISABLED_zero_intersections) {
+TEST(End2End, zero_intersections) {
     Vector3d min(0, 0, 0), max(100, 100, 100);
     std::vector<Triangle> triangles = generate_zero_intersections_test();
     std::cout << triangles.size() << " triangles." << std::endl;

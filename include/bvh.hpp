@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <functional>
+#include <sstream>
 
 #pragma once
 
@@ -45,7 +46,7 @@ namespace hw3d {
             expand_raw(x3, y3, z3);
         }
 
-        bool is_inside(const AABB& outer) { // "this" is inside "outer"
+        bool is_inside(const AABB& outer) const { // "this" is inside "outer"
             return std::equal(min.cbegin(), min.cend(), outer.min.cbegin(),
                 [](double x1, double x2) { return x1 > x2; }
                 ) && std::equal(max.cbegin(), max.cend(), outer.max.cbegin(),
@@ -100,9 +101,12 @@ namespace hw3d {
                 AABB bounds;
                 std::vector<size_t> triangle_indices;
                 std::vector<std::unique_ptr<Node>> children;
+                size_t subtree_triangles_count = -1;
 
                 Node(AABB bounds_) : bounds(bounds_) {}
                 Node() = default;
+
+                // big five...
 
                 void subdivide(int curr_depth, int max_depth) {
                     if(curr_depth == max_depth) { return; }
@@ -124,14 +128,19 @@ namespace hw3d {
                     );
                     return std::accumulate(dxdydz.begin(), dxdydz.end(), 1.0, std::multiplies<double>());
                 }
+
+                bool empty() const noexcept { return triangle_indices.empty(); }
+                bool is_leaf() const noexcept { return children.empty(); }
             };
 
             Node root;
             double eps = 1e-5;
+            size_t total_nodes_count_ = 0;
 
         public:
             Octree(AABB rootBounds, int max_depth = 3) : root(rootBounds) {
                 root.subdivide(0, max_depth);
+                total_nodes_count_ = std::pow(8, max_depth);
             }
 
             void insert(const Triangle& tr, size_t idx) {
@@ -143,33 +152,37 @@ namespace hw3d {
                 Node* curr_node = &root;
                 size_t curr_depth = 0;
                 while(curr_depth <= depth) {
-                    auto it = std::find_if(curr_node->children.begin(), curr_node->children.end(),
-                        [&](const std::unique_ptr<Node>& child){ return bb.is_inside(child.get()->bounds); }
-                    );
-                    if(it == curr_node->children.end()) {
-                        curr_node->triangle_indices.push_back(idx);
-                        return;
-                    } else {
-                        curr_node = it->get();
-                        curr_depth++;
+
+                    Node* unique_child = nullptr;
+                    for(auto&& ch : curr_node->children) {
+                        if(bb.is_inside(ch->bounds)) {
+                            if(unique_child) {
+                                unique_child = nullptr;
+                                break;
+                            }
+                            unique_child = ch.get();
+                        }
                     }
+
+                    if(!unique_child) break;
+                    curr_node = unique_child;
+                    ++curr_depth;
                 }
-                std::cout << "Failed to insert triangle " << tr << " in the tree :(" << std::endl;
-                std::terminate();
+
+                curr_node->triangle_indices.push_back(idx);
             }
 
         private:
-
-            void start_discovering(const Node& curr_node, const std::vector<Triangle>& triangles, std::vector<size_t>& output_idxs) const {
-                if(!curr_node.triangle_indices.empty()) {
+            void start_discovering(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+                if(!curr_node.empty()) {
                     for(size_t i = 0; i < curr_node.triangle_indices.size(); ++i) {
                         for(size_t j = 0; j < i; ++j) {
                             if(intersection_test_3d(triangles[curr_node.triangle_indices[i]], triangles[curr_node.triangle_indices[j]])) {
                                 #if 0
                                     std::cout << triangles[curr_node.triangle_indices[i]] << " and " << triangles[curr_node.triangle_indices[j]] << std::endl;
                                 #endif
-                                output_idxs.emplace_back(curr_node.triangle_indices[i]);
-                                output_idxs.emplace_back(curr_node.triangle_indices[j]);
+                                output_idxs.insert(curr_node.triangle_indices[i]);
+                                output_idxs.insert(curr_node.triangle_indices[j]);
                             }
                         }
                     }
@@ -180,30 +193,38 @@ namespace hw3d {
                 }
             }
 
-            void downstream_counting(const Node& curr_node, const std::vector<Triangle>& triangles, std::vector<size_t>& output_idxs) const {
-                for(auto&& t_idx : curr_node.triangle_indices) {
-                    for(auto&& child : curr_node.children) {
-                        for(auto&& child_t_idx : child->triangle_indices) {
-                            if(intersection_test_3d(triangles[t_idx], triangles[child_t_idx])) {
-                                #if 0
-                                    std::cout <<triangles[t_idx] << " and " << triangles[child_t_idx] << std::endl;
-                                #endif
-                                output_idxs.emplace_back(t_idx);
-                                output_idxs.emplace_back(child_t_idx);
-                            }
+            void downstream_counting(const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+                for(auto&& child : curr_node.children) {
+                    downstream_counting_base(curr_node, *child, triangles, output_idxs);
+                }
+            }
+
+            void downstream_counting_base(const Node& initial_node, const Node& curr_node, const std::vector<Triangle>& triangles, std::unordered_set<size_t>& output_idxs) const {
+                if(curr_node.subtree_triangles_count == 0) return;
+                for(auto&& tr_idx : initial_node.triangle_indices) {
+                    for(auto&& curr_tr_idxs : curr_node.triangle_indices) {
+                        if(intersection_test_3d(triangles[tr_idx], triangles[curr_tr_idxs])) {
+                            #if 0
+                                std::cout <<triangles[t_idx] << " and " << triangles[child_t_idx] << std::endl;
+                            #endif
+                            output_idxs.insert(tr_idx);
+                            output_idxs.insert(curr_tr_idxs);
                         }
                     }
+                }
+                for(auto&& child : curr_node.children) {
+                   downstream_counting_base(initial_node, *child, triangles, output_idxs);
                 }
             }
 
         private:
 
             void dump_(const Node& n) const {
-                std::cout << "([" << n.children.size() << "] ";
+                std::cout << "([" << n.children.size() << "]{" << n.subtree_triangles_count << "} ";
                 if (n.triangle_indices.empty()) std::cout << "-";
                 else {
                     for (size_t i = 0; i < n.triangle_indices.size(); ++i) {
-                        if (i) std::cout << ' ';
+                        if(i) std::cout << ' ';
                         std::cout << n.triangle_indices[i];
                     }
                 }
@@ -211,12 +232,61 @@ namespace hw3d {
                 for (const auto& ch : n.children) dump_(*ch);
             }
 
+            void count_empty_nodes_base(const Node& node, int& count) const {
+                if(node.triangle_indices.empty()) count++;
+                for(auto&& child : node.children) { count_empty_nodes_base(*(child.get()), count); }
+            }
+
+            const Node* localize_triangle_base(const Node* curr_node, size_t idx) const {
+                auto it = std::find(curr_node->triangle_indices.begin(), curr_node->triangle_indices.end(), idx);
+                if(it != curr_node->triangle_indices.end()) {
+                    return curr_node;
+                }
+
+                for(const auto& ch : curr_node->children) {
+                    if(const Node* r = localize_triangle_base(ch.get(), idx)) {
+                        return r;
+                    }
+                }
+
+                return nullptr;
+            }
+
+            size_t count_subtrees_triangles_base(Node& node) noexcept {
+                size_t total = node.triangle_indices.size();
+                for(auto&& ch : node.children) {
+                    total += count_subtrees_triangles_base(*ch);
+                }
+                node.subtree_triangles_count = total;
+                return total;
+            }
+
         public:
+            int count_empty_nodes() const {
+                int empty_nodes_c = 0;
+                count_empty_nodes_base(root, std::ref(empty_nodes_c));
+                return empty_nodes_c;
+            }
+
+            void localize_triangle(size_t idx) const {
+                const Node* node = localize_triangle_base(&root, idx);
+                if(!node) {
+                    std::cout << " X " << std::endl;
+                } else {
+                    std::cout << node->bounds << " " << std::addressof(node) << std::endl;
+                }
+            }
+
+            void count_subtrees_triangles() {
+                root.subtree_triangles_count = count_subtrees_triangles_base(root);
+            }
+
+            size_t total_nodes_count() const noexcept { return total_nodes_count_; }
 
             void dump() const { dump_(root); }
 
-            std::vector<size_t> count_intersections(std::vector<Triangle>& vec) const {
-                std::vector<size_t> output_idxs;
+            std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {
+                std::unordered_set<size_t> output_idxs(3 * vec.size() / 4);
                 start_discovering(root, vec, output_idxs);
                 return output_idxs;
             }

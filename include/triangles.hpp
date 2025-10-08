@@ -11,6 +11,7 @@
 namespace hw3d {
 
     struct Vector3d;
+    struct AABB;
 
     using edge = std::pair<Vector3d, Vector3d>;
 
@@ -227,4 +228,5 @@ namespace hw3d {
 
     std::pair<double, double> compute_interval(const Triangle& t, const Vector3d& v);
 
+    std::ostream& operator<<(std::ostream& os, const AABB& aabb);
 }

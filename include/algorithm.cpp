@@ -1,5 +1,6 @@
 #include<iostream>
 #include"triangles.hpp"
+#include"bvh.hpp"
 
 namespace hw3d {
 
@@ -21,6 +22,11 @@ namespace hw3d {
 
     std::ostream& operator<<(std::ostream& os, const Vector3d& vec) {
         os << "(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
+        return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const AABB& aabb) {
+        os << "[" << aabb.min << ", " << aabb.max << "]";
         return os;
     }
 
