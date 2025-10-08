@@ -287,6 +287,7 @@ namespace hw3d {
 
             std::unordered_set<size_t> count_intersections(std::vector<Triangle>& vec) const {
                 std::unordered_set<size_t> output_idxs(3 * vec.size() / 4);
+                output_idxs.max_load_factor(0.7f);
                 start_discovering(root, vec, output_idxs);
                 return output_idxs;
             }
