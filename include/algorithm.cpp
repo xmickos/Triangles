@@ -157,16 +157,16 @@ namespace hw3d {
         Interval intersection_interval1;
         Interval intersection_interval2;
 
-        int num_of_zeros_a = std::count_if(
+        int num_of_zeros_a = std::count(
             b_points_related_to_a.begin(),
             b_points_related_to_a.end(),
-            [](auto it){ return it == 0; }
+            0
         );
 
-        int num_of_zeros_b = std::count_if(
+        int num_of_zeros_b = std::count(
             a_points_related_to_b.begin(),
             a_points_related_to_b.end(),
-            [](auto it){ return it == 0; }
+            0
         );
 
         switch(num_of_zeros_a) {

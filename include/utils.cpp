@@ -143,8 +143,8 @@ N_intersections_test_output generate_N_intersections_test(double count_scale_rat
 std::unordered_set<size_t> bruteforce_algorithm(const std::vector<Triangle>& triangles) {
     std::unordered_set<size_t> set(3 * triangles.size() / 4);
 
-    for(int i = 0; i < triangles.size(); ++i) {
-        for(int j = 0; j < i; ++j) {
+    for(size_t i = 0; i < triangles.size(); ++i) {
+        for(size_t j = 0; j < i; ++j) {
             if(intersection_test_3d(triangles[i], triangles[j])) {
                 set.insert(i);
                 set.insert(j);

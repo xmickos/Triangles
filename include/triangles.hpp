@@ -197,14 +197,8 @@ namespace hw3d {
             }
 
             bool contains_point(Vector3d p_) const {
-                std::vector<char> s_i(3);
                 Plane pl = get_plane_equation();
-                for(int i = 0; i < 3; ++i) {
-                    Line l(edges[i].first, edges[i].second);
-                    s_i[i] = pl.n.dot_product(p_ - l.p());
-                }
-                return std::all_of(s_i.begin(), s_i.end(), [](auto it){ return it >= 0; })
-                    || std::all_of(s_i.begin(), s_i.end(), [](auto it){ return it <= 0; });
+                return std::fabs(pl.n.dot_product(pl.p - p_)) < float_tolerance;
             }
 
             Triangle rotate(Vector3d O, Vector3d axis, double angle_rad) const {

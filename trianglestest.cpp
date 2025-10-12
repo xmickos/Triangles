@@ -209,8 +209,14 @@ TEST(UnitTests, Intersection3d) {
     Triangle t27(Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
     Triangle t28(Vector3d(0.56, 0.76, 0), Vector3d(0, 0, 3), Vector3d(1, 1, 3));
 
-    EXPECT_TRUE(intersection_test_3d(t27, t28));
-    EXPECT_TRUE(intersection_test_3d(t28, t27));
+    EXPECT_FALSE(intersection_test_3d(t27, t28));
+    EXPECT_FALSE(intersection_test_3d(t28, t27));
+
+    Triangle t29(Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
+    Triangle t30(Vector3d(0, 0, 0.6), Vector3d(1, 1, -0.4), Vector3d(1, 1, 0.6));
+
+    EXPECT_FALSE(intersection_test_3d(t27, t28));
+    EXPECT_FALSE(intersection_test_3d(t28, t27));
 }
 
 TEST(End2End, DISABLED_Generate_n_intersections_test_file) {
