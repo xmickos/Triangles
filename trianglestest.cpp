@@ -13,12 +13,18 @@ TEST(UnitTests, relative_locations) {
     Triangle t2(Vector3d(-2, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
     Triangle t3(Vector3d(-2, 0, 1), Vector3d(0, 2, 1), Vector3d(2, 0, 1));
     Triangle t4(Vector3d(-1, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, -1));
+    Triangle t5(Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
+    Vector3d inner_point(0.3, 0.34, 0);
+    Vector3d outer_point(0.6, 0.6, 0);
 
     EXPECT_TRUE(t1.lies_on_the_same_plane_with(t2));
     EXPECT_FALSE(t1.lies_on_the_same_plane_with(t3));
     EXPECT_TRUE(t1.lies_on_parallel_planes_with(t3));
     EXPECT_FALSE(t4.lies_on_parallel_planes_with(t1));
     EXPECT_FALSE(t4.lies_on_the_same_plane_with(t1));
+    EXPECT_TRUE(t5.contains_point(inner_point));
+    EXPECT_FALSE(t5.contains_point(outer_point));
+
 }
 
 TEST(UnitTests, is_degenerate) {
