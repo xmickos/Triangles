@@ -15,10 +15,10 @@ namespace hw3d {
 
     using edge = std::pair<Vector3d, Vector3d>;
 
+    const inline double float_tolerance = 1e-9;
+
     struct Vector3d final {
         std::array<double, 3> cs_;
-
-        const static inline double float_tolerance = 1e-9;
 
         Vector3d() = default;
 
@@ -64,7 +64,7 @@ namespace hw3d {
 
         Vector3d normalized() const {
             double len2 = cs_[0] * cs_[0] + cs_[1] * cs_[1] + cs_[2] * cs_[2];
-            if(len2 < float_tolerance) {
+            if(len2 < hw3d::float_tolerance) {
                 throw std::invalid_argument("Vector has zero norm.");
             }
             double inv = 1.0 / std::sqrt(len2);
@@ -83,6 +83,8 @@ namespace hw3d {
             tmp = (tmp - O).rotate_around_origin(axis, angle_rad) + O;
             return tmp;
         }
+
+        bool is_valid() const noexcept { return std::all_of(cs_.begin(), cs_.end(), [](auto it){ return !std::isnan(it); }); }
 
         std::array<double, 3>::const_iterator cbegin() const noexcept { return cs_.cbegin(); }
         std::array<double, 3>::const_iterator cend() const noexcept { return cs_.cend(); }
@@ -111,7 +113,6 @@ namespace hw3d {
     class Line final {
         private:
             Vector3d p_, d_;
-            double float_tolerance = 1e-9;
 
         public:
             Line(const Vector3d& a, const Vector3d& b) : p_(a), d_(b - a) {}
@@ -121,7 +122,7 @@ namespace hw3d {
 
             bool contains(const Vector3d& p) const {
                 Vector3d tmp = p - p_;
-                return std::fabs(tmp.cross_product(d_).norm()) < float_tolerance;
+                return std::fabs(tmp.cross_product(d_).norm()) < hw3d::float_tolerance;
             }
     };
 
@@ -132,10 +133,9 @@ namespace hw3d {
         Interval(const Vector3d& p1_, const Vector3d& p2_) : p1(p1_), p2(p2_) {}
 
         bool contains(const Vector3d& rhs) const noexcept {
-            double float_tolerance = 1e-9;
             return Line(p1, p2).contains(rhs) &&
                 ((p1 - rhs).dot_product(p2 - p1) * (p2 - rhs).dot_product(p2 - p1) < 0 ||
-                std::fabs((p1 - rhs).dot_product(p2 - p1) * (p2 - rhs).dot_product(p2 - p1)) < float_tolerance);
+                std::fabs((p1 - rhs).dot_product(p2 - p1) * (p2 - rhs).dot_product(p2 - p1)) < hw3d::float_tolerance);
         }
 
         bool overlaps_with(const Interval& rhs) const noexcept {
@@ -153,6 +153,10 @@ namespace hw3d {
             c = n[2];
             d = -n.dot_product(p);
         }
+
+        bool contains_point(const Vector3d& p_) const {
+            return std::fabs(n.dot_product(p - p_)) < hw3d::float_tolerance;
+        }
     };
 
     class Triangle final {
@@ -160,8 +164,6 @@ namespace hw3d {
             std::array<Vector3d, 3> vertexes;
             std::array<edge, 3> edges;
         public:
-            const static inline double float_tolerance = 1e-9;
-
             Triangle(const Vector3d& a, const Vector3d& b, const Vector3d& c) : vertexes({a, b, c}), edges({edge(a, b), edge(b, c), edge(c, a)}) {}
 
             std::array<Vector3d, 3>::const_iterator cbegin() const noexcept { return vertexes.cbegin(); }
@@ -174,7 +176,7 @@ namespace hw3d {
                 Vector3d tmp1(edges[0]);
                 Vector3d tmp2(edges[1]);
 
-                return tmp1.cross_product(tmp2).norm() < float_tolerance;
+                return tmp1.cross_product(tmp2).norm() < hw3d::float_tolerance;
             }
 
             Plane get_plane_equation() const {
@@ -185,21 +187,21 @@ namespace hw3d {
             bool lies_on_parallel_planes_with(const Triangle& rhs) const {
                 Plane pq1 = get_plane_equation();
                 Plane pq2 = rhs.get_plane_equation();
-                return pq1.n.cross_product(pq2.n).norm() < float_tolerance;
+                return pq1.n.cross_product(pq2.n).norm() < hw3d::float_tolerance;
             }
 
             bool lies_on_the_same_plane_with(const Triangle& rhs) const {
                 Plane pq1 = get_plane_equation();
                 Plane pq2 = rhs.get_plane_equation();
                 return std::all_of(rhs.ecbegin(), rhs.ecend(),
-                    [&](auto edge){ return pq1.n.dot_product(edge.second - edge.first) < float_tolerance; }
-                ) && std::fabs(pq1.d - pq2.d) < float_tolerance;
+                    [&](auto edge){ return pq1.n.dot_product(edge.second - edge.first) < hw3d::float_tolerance; }
+                ) && std::fabs(pq1.d - pq2.d) < hw3d::float_tolerance;
             }
 
             bool contains_point(Vector3d p_) const {
                 if(is_degenerate()) return false;
                 Plane pl = get_plane_equation();
-                if(std::fabs(pl.n.dot_product(pl.p - p_)) > float_tolerance) {
+                if(!pl.contains_point(p_)) {
                     return false;
                 } else {
                     std::array<double, 3> s;
@@ -207,7 +209,7 @@ namespace hw3d {
                         Vector3d p_i = p_ - vertexes[i];
                         s[i] = (edges[i].second - edges[i].first).cross_product(p_i).dot_product(pl.n);
                     }
-                    return std::all_of(s.begin(), s.end(), [](auto it){ return it > float_tolerance; }) || std::all_of(s.begin(), s.end(), [](auto it){ return it <= float_tolerance; });
+                    return std::all_of(s.begin(), s.end(), [](auto it){ return it + hw3d::float_tolerance > 0; }) || std::all_of(s.begin(), s.end(), [](auto it){ return it - hw3d::float_tolerance < 0; });
                 }
                 return false;
             }

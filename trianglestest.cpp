@@ -121,6 +121,7 @@ TEST(UnitTests, Vector3dBasics) {
     Vector3d d(3, 3, 3);
     Vector3d e = a + c;
     Vector3d f = a - c;
+    Vector3d nan(NAN, NAN, NAN);
     for(int i = 0; i < 3; ++i) {
         EXPECT_NEAR(b[i], c[i], 1e-3);
     }
@@ -130,6 +131,7 @@ TEST(UnitTests, Vector3dBasics) {
     for(int i = 0; i < 3; ++i) {
         EXPECT_NEAR(f[i], c[i], 1e-3);
     }
+    EXPECT_FALSE(nan.is_valid());
 }
 
 TEST(UnitTests, Intersection3d) {
@@ -215,14 +217,28 @@ TEST(UnitTests, Intersection3d) {
     Triangle t27(Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
     Triangle t28(Vector3d(0.56, 0.76, 0), Vector3d(0, 0, 3), Vector3d(1, 1, 3));
 
-    EXPECT_FALSE(intersection_test_3d(t27, t28));
-    EXPECT_FALSE(intersection_test_3d(t28, t27));
+    EXPECT_TRUE(intersection_test_3d(t27, t28));
+    EXPECT_TRUE(intersection_test_3d(t28, t27));
 
     Triangle t29(Vector3d(0, 0, 0), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
     Triangle t30(Vector3d(0, 0, 0.6), Vector3d(1, 1, -0.4), Vector3d(1, 1, 0.6));
 
-    EXPECT_FALSE(intersection_test_3d(t27, t28));
-    EXPECT_FALSE(intersection_test_3d(t28, t27));
+    EXPECT_FALSE(intersection_test_3d(t29, t30));
+    EXPECT_FALSE(intersection_test_3d(t30, t29));
+
+    Triangle t31(Vector3d(1, 0, 0), Vector3d(0, 1, 0), Vector3d(0, 0, 1));
+    Triangle t32(Vector3d(5, 5, 5), Vector3d(0, 0, 0), Vector3d(0, 5, 0));
+
+    EXPECT_TRUE(intersection_test_3d(t32, t31));
+    EXPECT_TRUE(intersection_test_3d(t31, t32));
+}
+
+TEST(UnitTests, DISABLED_IsolatedIntersection3d) {
+    Triangle t27(Vector3d(0, 0, 0), Vector3d(0, 2, 0), Vector3d(2, 0, 0));
+    Triangle t28(Vector3d(0.56, 0.76, 0), Vector3d(0, 0, 3), Vector3d(1, 1, 3));
+
+    EXPECT_TRUE(intersection_test_3d(t27, t28));
+    EXPECT_TRUE(intersection_test_3d(t28, t27));
 }
 
 TEST(End2End, DISABLED_Generate_n_intersections_test_file) {

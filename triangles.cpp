@@ -36,6 +36,8 @@ int main() {
         std::cout << "depth: " << depth << std::endl;
     #endif
 
+    // TODO Add Morton z-codes for spacial locality in std::vector<Triangle>
+
     #ifdef SPEED_BENCH
         auto start1 = std::chrono::high_resolution_clock::now();
     #endif
