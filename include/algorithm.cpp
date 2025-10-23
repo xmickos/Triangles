@@ -77,7 +77,7 @@ namespace hw3d {
 
     int plane_point_location(const Triangle& tr, const Vector3d& p) {
         Plane pq = tr.get_plane_equation();
-        return std::fabs(pq.n.dot_product(p - pq.p)) < hw3d::float_tolerance ? 0 : !std::signbit(pq.n.dot_product(p - pq.p));
+        return std::fabs(pq.n.dot_product(p - pq.p)) < hw3d::float_tolerance ? 0 : (std::signbit(pq.n.dot_product(p - pq.p)) ? -1 : 1);
     }
 
     bool intersection_test_2d(const Triangle& a, const Triangle& b) {

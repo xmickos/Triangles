@@ -231,6 +231,12 @@ TEST(UnitTests, Intersection3d) {
 
     EXPECT_TRUE(intersection_test_3d(t32, t31));
     EXPECT_TRUE(intersection_test_3d(t31, t32));
+
+    Triangle t33(Vector3d(65.8550,96.08969,5.755709), Vector3d(64.80809,94.44469,4.5073699), Vector3d(64.9090,95.0743999,5.557450));
+    Triangle t34(Vector3d(44.36019,3.9428700,14.6609), Vector3d(45.29370,4.623669,15.0114), Vector3d(44.4896,5.0229,15.6329));
+
+    EXPECT_FALSE(intersection_test_3d(t33, t34));
+    EXPECT_FALSE(intersection_test_3d(t34, t33));
 }
 
 TEST(UnitTests, DISABLED_IsolatedIntersection3d) {
